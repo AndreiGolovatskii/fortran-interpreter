@@ -12,6 +12,8 @@
     class Driver;
     class Expression;
     class Integer;
+    class Operator;
+    class IfStatement;
 }
 
 // %param { Driver &drv }
@@ -66,6 +68,11 @@
 %nterm <std::vector<std::string>> declaration_list
 %nterm <std::string> var_type
 %nterm <std::vector<Expression*>> exp_list
+%nterm <std::vector<Operator*>> statements
+%nterm <Operator*> statement
+%nterm <IfStatement*> if_part
+%nterm <IfStatement*> else_if_part
+%nterm <IfStatement*> if_statement
 
 //%printer { yyo << $$; } <*>;
 
@@ -89,7 +96,11 @@ mb_newlines:
 
 operators:
     %empty {}
-    | declarations statements {}
+    | declarations statements {
+        for (auto* op : $2) {
+            driver.AddOperator(op);
+        }
+    }
 
 declarations:
     %empty {}
@@ -121,17 +132,21 @@ declaration_list:
 
 statements:
     %empty {}
-    | statements statement NEWLINE {}
+    | statements statement NEWLINE {
+        $1.push_back($2);
+        $$ = $1;
+    }
 
 statement:
     %empty {}
     | "identifier" ASSIGN exp {
-        driver.AddOperator(new AssignOperator($1, $3));
+        $$ = new AssignOperator($1, $3);
     }
     | if_statement {
+        $$ = $1;
     }
     | PRINT STAR exp_list {
-        driver.AddOperator(new PrintOperator($3));
+        $$ = new PrintOperator($3);
     }
 
 exp_list:
@@ -147,15 +162,30 @@ exp_list:
 %left "*" "/";
 
 if_statement:
-    IF "(" exp ")" THEN NEWLINE statements else_if_statements {}
+    else_if_part {$$ = $1;}
 
-else_if_statements:
-    else_statement {}
-    | ELSE IF "(" exp ")" THEN NEWLINE statements else_if_statements {}
+if_part:
+    IF "(" exp ")" THEN NEWLINE statements {
+        IfStatement* stat = new IfStatement();
+        stat->AddIf($3, std::move($7));
+        $$ = stat;
+    }
 
-else_statement:
-    END IF {}
-    | ELSE NEWLINE statements END IF {}
+else_if_part:
+    if_part {
+        $$ = $1;
+    }
+    | else_if_part ELSE IF "(" exp ")" THEN NEWLINE statements {
+        $1->AddIf($5, std::move($9));
+        $$ = $1;
+    }
+    | else_if_part ELSE NEWLINE statements END IF {
+        $1->AddElse(std::move($4));
+        $$ = $1;
+    }
+    | else_if_part END IF {
+        $$ = $1;
+    }
 
 exp:
     "number" {$$ = new ValueExpression(new Integer($1));}

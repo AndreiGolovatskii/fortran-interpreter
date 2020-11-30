@@ -10,7 +10,7 @@ program MMMM
         end if
     END IF
 
-    IF (1) THEN
+    IF (0) THEN
         PRINT *, 1
     ELSE IF (2) THEN
         PRINT *, 2

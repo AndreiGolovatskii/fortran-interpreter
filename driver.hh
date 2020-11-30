@@ -83,6 +83,16 @@ public:
             NextOperator_++;
         }
     }
+
+    void Visit(IfStatement* ifStat) {
+        for (auto& simpleIf: ifStat->Components) {
+            simpleIf->Cond->Accept(this);
+            if (*(simpleIf->Cond->ResultValue)) {
+                Visit(simpleIf->Operators);
+                return;
+            }
+        }
+    }
 };
 
 

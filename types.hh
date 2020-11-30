@@ -7,6 +7,7 @@ public:
     virtual std::unique_ptr<Type> operator+(const Type& other) const = 0;
     virtual void Print(std::ostream& out) const = 0;
     virtual std::unique_ptr<Type> Clone() const = 0;
+    explicit virtual operator bool() const = 0;
     virtual ~Type() {};
 };
 
@@ -20,6 +21,9 @@ public:
     }
     [[nodiscard]] std::unique_ptr<Type> Clone() const override {
         return std::unique_ptr<Type>(new None());
+    }
+    explicit operator bool() const override {
+        return false;
     }
 };
 
@@ -37,6 +41,9 @@ public:
     }
     [[nodiscard]] std::unique_ptr<Type> Clone() const override {
         return std::unique_ptr<Type>(new Integer(Value));
+    }
+    explicit operator bool() const override {
+        return Value;
     }
 };
 

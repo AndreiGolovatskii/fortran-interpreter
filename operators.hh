@@ -16,17 +16,20 @@ class SubExpression;
 class SumExpression;
 class IdentifierExpression;
 class ValueExpression;
+class SimpleIfStatement;
+class IfStatement;
 
 
 class Visitor {
 public:
-    virtual void Visit(Declaration* declaration) = 0;
-    virtual void Visit(AssignOperator* declaration) = 0;
-    virtual void Visit(SumExpression* declaration) = 0;
-    virtual void Visit(SubExpression* declaration) = 0;
-    virtual void Visit(IdentifierExpression* declaration) = 0;
-    virtual void Visit(ValueExpression* declaration) = 0;
+    virtual void Visit(Declaration*) = 0;
+    virtual void Visit(AssignOperator*) = 0;
+    virtual void Visit(SumExpression*) = 0;
+    virtual void Visit(SubExpression*) = 0;
+    virtual void Visit(IdentifierExpression*) = 0;
+    virtual void Visit(ValueExpression*) = 0;
     virtual void Visit(PrintOperator* write) = 0;
+    virtual void Visit(IfStatement*) = 0;
 };
 
 
@@ -106,5 +109,22 @@ public:
     void Accept(Visitor* visitor) final { visitor->Visit(this); }
 };
 
+class SimpleIfStatement { // TODO
+public:
+    Expression* Cond;
+    std::vector<Operator*> Operators;
+    SimpleIfStatement(Expression* cond, std::vector<Operator*>&& ops): Cond(cond), Operators(std::move(ops)) {}
+};
+
 class IfStatement: public Operator {
+public:
+    std::vector<SimpleIfStatement*> Components;
+    IfStatement() {}
+    void Accept(Visitor* visitor) final { visitor->Visit(this); }
+    void AddElse(std::vector<Operator*>&& ops) {
+        AddIf(new ValueExpression(new Integer(1)), std::move(ops)); // TODO
+    }
+    void AddIf(Expression* pred, std::vector<Operator*>&& ops) {
+        Components.emplace_back(new SimpleIfStatement(pred,   std::move(ops)));
+    }
 };
