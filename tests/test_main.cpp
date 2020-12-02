@@ -11,7 +11,7 @@ protected:
 
     // void TearDown() override {}
 
-    Driver Driver_;
+    TDriver Driver_;
 };
 
 

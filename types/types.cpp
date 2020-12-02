@@ -1,6 +1,6 @@
 #include "types.hh"
 
-std::ostream& operator<<(std::ostream& out, const Type& type) {
+std::ostream& operator<<(std::ostream& out, const TType& type) {
     type.Print(out);
     return out;
 }
@@ -13,11 +13,11 @@ std::string LoverCase(std::string s) {
     return s;
 }
 
-std::unique_ptr<Type> GetDefaultValue(const std::string& type) {
+std::unique_ptr<TType> GetDefaultValue(const std::string& type) {
     if (type == "integer") {
-        return std::unique_ptr<Type>(new Integer());
+        return std::unique_ptr<TType>(new TInteger());
     } else if (type == "none") {
-        return std::unique_ptr<Type>(new None());
+        return std::unique_ptr<TType>(new TNone());
     } else {
         throw std::logic_error("Unknown Type");
     }

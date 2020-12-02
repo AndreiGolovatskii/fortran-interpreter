@@ -1,9 +1,9 @@
-#include <iostream>
 #include <driver.hh>
+#include <iostream>
 
 int main(int argc, char** argv) {
     int result = 0;
-    Driver driver;
+    TDriver driver;
 
     for (int i = 1; i < argc; ++i) {
         if (argv[i] == std::string("-p")) {

@@ -2,15 +2,14 @@
 #include "parser.hh"
 
 
-
-Driver::Driver() :
+TDriver::TDriver() :
     trace_parsing(false),
     trace_scanning(false),
     scanner(*this), parser(scanner, *this) {
 }
 
 
-int Driver::parse(const std::string& f) {
+int TDriver::parse(const std::string& f) {
     file = f;
     location.initialize(&file);
     scan_begin();
@@ -20,7 +19,7 @@ int Driver::parse(const std::string& f) {
     return parse_result;
 }
 
-void Driver::scan_begin() {
+void TDriver::scan_begin() {
     scanner.set_debug(trace_scanning);
   if (file.empty () || file == "-") {
   } else {
@@ -29,11 +28,7 @@ void Driver::scan_begin() {
   }
 }
 
-void Driver::scan_end()
+void TDriver::scan_end()
 {
     stream.close();
-}
-
-void Interpreter::Run() {
-    Visit(Driver_->operators);
 }

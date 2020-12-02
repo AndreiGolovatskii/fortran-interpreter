@@ -9,12 +9,12 @@
 
 #include "parser.hh"
 
-class Driver;
+class TDriver;
 
 class Scanner: public yyFlexLexer {
  public:
-    Scanner(Driver& driver): driver(driver) {}
+    Scanner(TDriver& driver): driver(driver) {}
 	virtual ~Scanner() {}
 	virtual yy::parser::symbol_type ScanToken();
-    Driver &driver;
+    TDriver& driver;
 };

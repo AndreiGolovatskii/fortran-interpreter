@@ -9,14 +9,11 @@
 %code requires {
     #include <string>
     class Scanner;
-    class Driver;
-    class Expression;
-    class Integer;
-    class Operator;
-    class IfStatement;
+    class TDriver;
+    #include "statements_forward_declaration.hh"
 }
 
-// %param { Driver &drv }
+// %param { TDriver &drv }
 
 %define parse.trace
 %define parse.error verbose
@@ -24,18 +21,18 @@
 %code {
     #include "driver.hh"
     #include "location.hh"
-    #include "operators.hh"
+    #include "statements_forward_declaration.hh"
     #include "types.hh"
 
-    static yy::parser::symbol_type yylex(Scanner &scanner, Driver& driver) {
+    static yy::parser::symbol_type yylex(Scanner &scanner, TDriver& driver) {
         return scanner.ScanToken();
     }
 }
 
 %lex-param { Scanner &scanner }
-%lex-param { Driver &driver }
+%lex-param { TDriver &driver }
 %parse-param { Scanner &scanner }
-%parse-param { Driver &driver }
+%parse-param { TDriver &driver }
 
 %locations
 
@@ -64,15 +61,15 @@
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
-%nterm <Expression*> exp
+%nterm <TExpression*> exp
 %nterm <std::vector<std::string>> declaration_list
 %nterm <std::string> var_type
-%nterm <std::vector<Expression*>> exp_list
-%nterm <std::vector<Operator*>> statements
-%nterm <Operator*> statement
-%nterm <IfStatement*> if_part
-%nterm <IfStatement*> else_if_part
-%nterm <IfStatement*> if_statement
+%nterm <std::vector<TExpression*>> exp_list
+%nterm <std::vector<TStatement*>> statements
+%nterm <TStatement*> statement
+%nterm <TIfStatement*> if_part
+%nterm <TIfStatement*> else_if_part
+%nterm <TIfStatement*> if_statement
 
 //%printer { yyo << $$; } <*>;
 
@@ -98,7 +95,7 @@ operators:
     %empty {}
     | declarations statements {
         for (auto* op : $2) {
-            driver.AddOperator(op);
+            driver.AddStatement(op);
         }
     }
 
@@ -110,7 +107,7 @@ declaration:
     %empty {}
     | var_type DOUBLE_COLON declaration_list {
         for (const std::string& varName : $3) {
-            driver.AddOperator(new Declaration(varName, $1));
+            driver.AddStatement(new TDeclaration(varName, $1));
         }
     }
 
@@ -140,18 +137,18 @@ statements:
 statement:
     %empty {}
     | "identifier" ASSIGN exp {
-        $$ = new AssignOperator($1, $3);
+        $$ = new TAssignStatement($1, $3);
     }
     | if_statement {
         $$ = $1;
     }
     | PRINT STAR exp_list {
-        $$ = new PrintOperator($3);
+        $$ = new TPrintStatement($3);
     }
 
 exp_list:
     %empty {
-        $$ = std::vector<Expression*> ();
+        $$ = std::vector<TExpression*> ();
     }
     | exp_list COMMA exp {
         $1.push_back($3);
@@ -166,7 +163,7 @@ if_statement:
 
 if_part:
     IF "(" exp ")" THEN NEWLINE statements {
-        IfStatement* stat = new IfStatement();
+        TIfStatement* stat = new TIfStatement();
         stat->AddIf($3, std::move($7));
         $$ = stat;
     }
@@ -188,9 +185,9 @@ else_if_part:
     }
 
 exp:
-    "number" {$$ = new ValueExpression(new Integer($1));}
-    | "identifier" {$$ = new IdentifierExpression($1);}
-    | exp "+" exp {$$ = new SumExpression($1, $3); }
+    "number" {$$ = new TValueExpression(new TInteger($1));}
+    | "identifier" {$$ = new TIdentifierExpression($1);}
+    | exp "+" exp {$$ = new TSumExpression($1, $3); }
 
     /* TODO
     | exp "-" exp {$$ = $1 - $3; }
