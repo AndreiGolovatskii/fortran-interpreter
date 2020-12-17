@@ -2,11 +2,15 @@
 
 class TStatement;
 class TPrintStatement;
-class TDeclaration;
-class TExpression;
 class TAssignStatement;
+class TDeclaration;
+class TIfStatement;
+class TDoLoopStatement;
+
+class TExpression;
+class TValueExpression;
+class TIdentifierExpression;
 class TSubExpression;
 class TSumExpression;
-class TIdentifierExpression;
-class TValueExpression;
-class TIfStatement;
+class TMulExpression;
+class TDivExpression;

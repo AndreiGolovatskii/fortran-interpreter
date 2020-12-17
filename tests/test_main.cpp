@@ -5,20 +5,49 @@
 #include "driver.hh"
 
 
-class ParseTests : public testing::TestWithParam<std::string> {
+class TInterpreterTest : public testing::TestWithParam<std::string> {
 protected:
-    //void SetUp() override {}
+    // void SetUp() override {}
 
     // void TearDown() override {}
 
-    TDriver Driver_;
+    void TestInterpreter(const std::string& testDir) {
+        TestInterpreter(testDir + "/src.f95", testDir + "/in.txt", testDir + "/out.txt");
+    }
+
+    void TestInterpreter(const std::string& fileSrc, const std::string& fileIn, const std::string& fileExpectedOut) {
+
+        std::ifstream in(fileIn);
+        std::ifstream expectedOut(fileExpectedOut);
+
+        std::ostringstream out;
+        std::ostringstream err;
+
+        TDriver driver{in, out, err};
+        ASSERT_EQ(driver.parse(fileSrc), 0);
+        ASSERT_EQ(driver.Evaluate(), 0);
+
+        std::istringstream realOut(out.str());
+        while (realOut && expectedOut) {
+            std::string outString;
+            std::string expectedString;
+
+            realOut >> outString;
+            expectedOut >> expectedString;
+            ASSERT_EQ(outString, expectedString);
+        }
+        ASSERT_FALSE(realOut);
+        ASSERT_FALSE(expectedOut);
+    }
+
+    void TestParse(const std::string& src) {
+        TDriver driver;
+        ASSERT_EQ(driver.parse(src), 0);
+    }
 };
 
 
-TEST_P(ParseTests, SuccessParse) {
-    ASSERT_EQ(Driver_.parse(GetParam()), 0);
-    ASSERT_EQ(Driver_.Evaluate(), 0);
-}
+TEST_P(TInterpreterTest, ParseTest) { TestParse(GetParam()); }
 
 
 std::vector<std::string> FilesToTest(const std::vector<std::string>& testDirs) {
@@ -31,7 +60,12 @@ std::vector<std::string> FilesToTest(const std::vector<std::string>& testDirs) {
     return res;
 }
 
+INSTANTIATE_TEST_SUITE_P(ParseTest, TInterpreterTest, ::testing::ValuesIn(FilesToTest({"parse_tests"})));
 
-INSTANTIATE_TEST_SUITE_P(SuccessTest, ParseTests,
-                         ::testing::ValuesIn(FilesToTest({"parse_tests", "if_statements_tests",
-                                                          "print_and_exp_tests"})));
+
+TEST_F(TInterpreterTest, SimplePrintStatements) { TestInterpreter("prints"); }
+
+//TEST_F(TInterpreterTest, SimpleIfStatements) { TestInterpreter("simple_statements/if_block.f95"); }
+
+
+//TEST_F(TInterpreterTest, DoStatements) { TestInterpreter("simple_statements/do_statements.f95"); }

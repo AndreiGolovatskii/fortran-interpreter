@@ -1,33 +1,31 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "types.hh"
 #include "visitor.h"
 
+#include "statements_base.hh"
 
-class TStatement {
-public:
-    virtual void Accept(TVisitor* visitor) = 0;
-    virtual ~TStatement() = default;
-};
-
+#include "expressions.hh"
 
 class TPrintStatement : public TStatement {
 public:
-    std::vector<TExpression*> Exprs;
-    explicit TPrintStatement(std::vector<TExpression*> exprs) : Exprs(std::move(exprs)) {}
+    std::vector<std::unique_ptr<TExpression>> Exprs;
+    explicit TPrintStatement(std::vector<std::unique_ptr<TExpression>> exprs) : Exprs(std::move(exprs)) {}
     void Accept(TVisitor* visitor) final { visitor->Visit(this); }
 };
 
 
 class TAssignStatement : public TStatement {
 public:
-    TAssignStatement(const std::string& varName, TExpression* expr) : VarName(LoverCase(varName)), Expr(expr) {}
+    TAssignStatement(const std::string& varName, std::unique_ptr<TExpression>&& expr)
+        : VarName(LoverCase(varName)), Expr(std::move(expr)) {}
     void Accept(TVisitor* visitor) final { visitor->Visit(this); }
     std::string VarName;
-    TExpression* Expr;
+    std::unique_ptr<TExpression> Expr;
 };
 
 
@@ -41,64 +39,40 @@ public:
 };
 
 
-class TExpression : public TStatement {
+class TSimpleIfStatement {
 public:
-    std::unique_ptr<TType> ResultValue;
+    std::unique_ptr<TExpression> Cond;
+    std::vector<std::unique_ptr<TStatement>> Statements;
+    TSimpleIfStatement(std::unique_ptr<TExpression>&& cond, std::vector<std::unique_ptr<TStatement>>&& ops)
+        : Cond(std::move(cond)), Statements(std::move(ops)) {}
 };
 
-
-class TIdentifierExpression : public TExpression {
+class TIfStatement : public TStatement {
 public:
-    std::string Identifier;
-    explicit TIdentifierExpression(const std::string& id) : Identifier(LoverCase(id)) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
-};
-
-
-class TDoublePositionExpression : public TExpression {
-public:
-    TDoublePositionExpression(TExpression* first, TExpression* second) : first(first), second(second) {}
-    TExpression *first, *second;
-};
-
-
-class TSumExpression : public TDoublePositionExpression {
-public:
-    TSumExpression(TExpression* first, TExpression* second) : TDoublePositionExpression(first, second) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
-};
-
-
-class TSubExpression : public TDoublePositionExpression {
-public:
-    TSubExpression(TExpression* first, TExpression* second) : TDoublePositionExpression(first, second) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
-};
-
-
-class TValueExpression : public TExpression {
-public:
-    TType* Value;
-    TValueExpression(TType* value) : Value(value) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
-};
-
-class TSimpleIfStatement { // TODO
-public:
-    TExpression* Cond;
-    std::vector<TStatement*> Statements;
-    TSimpleIfStatement(TExpression* cond, std::vector<TStatement*>&& ops): Cond(cond), Statements(std::move(ops)) {}
-};
-
-class TIfStatement: public TStatement {
-public:
-    std::vector<TSimpleIfStatement*> Components;
+    std::vector<std::unique_ptr<TSimpleIfStatement>> Components;
     TIfStatement() {}
     void Accept(TVisitor* visitor) final { visitor->Visit(this); }
-    void AddElse(std::vector<TStatement*>&& ops) {
-        AddIf(new TValueExpression(new TInteger(1)), std::move(ops)); // TODO
+    void AddElse(std::vector<std::unique_ptr<TStatement>>&& ops) {
+        AddIf(std::make_unique<TValueExpression>(std::make_unique<TInteger>(1)), std::move(ops));
     }
-    void AddIf(TExpression* pred, std::vector<TStatement*>&& ops) {
-        Components.emplace_back(new TSimpleIfStatement(pred,   std::move(ops)));
+    void AddIf(std::unique_ptr<TExpression>&& pred, std::vector<std::unique_ptr<TStatement>>&& ops) {
+        Components.emplace_back(std::make_unique<TSimpleIfStatement>(std::move(pred), std::move(ops)));
     }
+};
+
+
+class TDoLoopStatement : public TStatement {
+public:
+    std::string VarName;
+    std::unique_ptr<TExpression> StartExpression;
+    std::unique_ptr<TExpression> EndExpression;
+    std::unique_ptr<TExpression> StepExpression;
+    std::vector<std::unique_ptr<TStatement>> Statements;
+    TDoLoopStatement(std::string varName, std::unique_ptr<TExpression>&& startExpression,
+                     std::unique_ptr<TExpression>&& endExpression, std::unique_ptr<TExpression>&& stepExpression,
+                     std::vector<std::unique_ptr<TStatement>>&& statements)
+        : VarName(std::move(varName)), StartExpression(std::move(startExpression)),
+          EndExpression(std::move(endExpression)), StepExpression(std::move(stepExpression)),
+          Statements(std::move(statements)) {}
+    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
 };
