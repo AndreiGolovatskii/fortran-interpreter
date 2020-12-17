@@ -1,5 +1,8 @@
 program MAIN
-    INTEGER :: a
-    InTegER::i, j, k, l, m, n
-    INTEGER ::x, y
+    INTEGER :: a, b, c
+    integer :: z
+    integer x, y
+
+    InTegER::i, j, k
+    InTEGEr ::l, m, n
 end

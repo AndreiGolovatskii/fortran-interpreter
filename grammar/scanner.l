@@ -24,7 +24,7 @@
 %}
 
 id    [a-zA-Z][a-zA-Z_0-9]*
-int   [0-9]+
+int   [-+0-9][0-9]*
 blank [ \t\r]
 
 %{
@@ -51,16 +51,22 @@ blank [ \t\r]
 "("        return yy::parser::make_LPAREN (loc);
 ")"        return yy::parser::make_RPAREN (loc);
 "="        return yy::parser::make_ASSIGN (loc);
+"::"       return yy::parser::make_DOUBLE_COLON(loc);
+","        return yy::parser::make_COMMA(loc);
+"'"        return yy::parser::make_QUOTE(loc);
+"""        return yy::parser::make_QUOTE(loc);
+
 "program"  return yy::parser::make_PROGRAM(loc);
-"print"    return yy::parser::make_PRINT(loc);
 "end"      return yy::parser::make_END(loc);
+
 "if"       return yy::parser::make_IF(loc);
 "then"     return yy::parser::make_THEN(loc);
 "else"     return yy::parser::make_ELSE(loc);
+"do"       return yy::parser::make_DO(loc);
+
 "INTEGER"  return yy::parser::make_INTEGER(loc);
 
-"::"       return yy::parser::make_DOUBLE_COLON(loc);
-","        return yy::parser::make_COMMA(loc);
+"print"    return yy::parser::make_PRINT(loc);
 
 {int}      return make_NUMBER(yytext, loc);
 {id}       return yy::parser::make_IDENTIFIER(yytext, loc);

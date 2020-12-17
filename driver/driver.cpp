@@ -2,13 +2,6 @@
 #include "parser.hh"
 
 
-TDriver::TDriver() :
-    trace_parsing(false),
-    trace_scanning(false),
-    scanner(*this), parser(scanner, *this) {
-}
-
-
 int TDriver::parse(const std::string& f) {
     file = f;
     location.initialize(&file);

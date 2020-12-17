@@ -39,37 +39,50 @@
 %define api.token.prefix {TOK_}
 
 %token
-    ASSIGN "="
-    COMMA ","
-    DOUBLE_COLON
-    END "end"
     EOF 0 "end of file"
-    MINUS "-"
-    NEWLINE "newline"
-    PLUS "+"
+
+    COMMA ","
+
     PROGRAM "program"
+    END "end"
+    NEWLINE "newline"
+
+    ASSIGN "="
+    MINUS "-"
+    PLUS "+"
     STAR "*"
     SLASH "/"
     LPAREN "("
     RPAREN ")"
-    PRINT
-    INTEGER
+    DOUBLE_COLON "::"
+    QUOTE "'"
+    DOUBLE_QUOTE """
+
     IF
     ELSE
     THEN
+    DO
+
+    INTEGER
+
+    PRINT
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
-%nterm <TExpression*> exp
+%nterm <std::unique_ptr<TExpression>> exp
 %nterm <std::vector<std::string>> declaration_list
 %nterm <std::string> var_type
-%nterm <std::vector<TExpression*>> exp_list
-%nterm <std::vector<TStatement*>> statements
-%nterm <TStatement*> statement
-%nterm <TIfStatement*> if_part
-%nterm <TIfStatement*> else_if_part
-%nterm <TIfStatement*> if_statement
+%nterm <std::vector<std::unique_ptr<TExpression>>> exp_list
+%nterm <std::vector<std::unique_ptr<TStatement>>> declarations
+%nterm <std::vector<std::unique_ptr<TStatement>>> statements
+%nterm <std::vector<std::unique_ptr<TStatement>>> declaration
+%nterm <std::unique_ptr<TStatement>> statement
+%nterm <std::unique_ptr<TIfStatement>> if_statement
+%nterm <std::unique_ptr<TIfStatement>> if_part
+%nterm <std::unique_ptr<TIfStatement>> else_if_part
+%nterm <std::unique_ptr<TDoLoopStatement>> do_loop
+%nterm <std::unique_ptr<TExpression>> do_loop_step
 
 //%printer { yyo << $$; } <*>;
 
@@ -94,107 +107,133 @@ mb_newlines:
 operators:
     %empty {}
     | declarations statements {
-        for (auto* op : $2) {
-            driver.AddStatement(op);
-        }
+        driver.SetDeclarations(std::move($1));
+        driver.SetStatements(std::move($2));
     }
 
 declarations:
     %empty {}
-    | declarations declaration NEWLINE {}
+    | declarations declaration NEWLINE {
+        for (std::unique_ptr<TStatement>& declaration : $2) {
+            $1.push_back(std::move(declaration));
+        }
+        $$ = std::move($1);
+    }
 
 declaration:
     %empty {}
     | var_type DOUBLE_COLON declaration_list {
+        std::vector<std::unique_ptr<TStatement>> declarations;
         for (const std::string& varName : $3) {
-            driver.AddStatement(new TDeclaration(varName, $1));
+            declarations.push_back(std::make_unique<TDeclaration>(varName, $1));
         }
+        $$ = std::move(declarations);
     }
-
+    | var_type declaration_list {
+        std::vector<std::unique_ptr<TStatement>> declarations;
+        for (const std::string& varName : $2) {
+            declarations.push_back(std::make_unique<TDeclaration>(varName, $1));
+        }
+        $$ = std::move(declarations);
+    }
 
 var_type:
     INTEGER {$$ = "integer";}
-
 
 declaration_list:
     "identifier" {
         std::vector<std::string> list;
         list.push_back($1);
-        $$ = list;
+        $$ = std::move(list);
     }
     | declaration_list "," "identifier" {
         $1.push_back($3);
-        $$ = $1;
+        $$ = std::move($1);
     }
 
 statements:
     %empty {}
     | statements statement NEWLINE {
-        $1.push_back($2);
-        $$ = $1;
+        $1.push_back(std::move($2));
+        $$ = std::move($1);
     }
 
 statement:
     %empty {}
     | "identifier" ASSIGN exp {
-        $$ = new TAssignStatement($1, $3);
+        $$ = std::make_unique<TAssignStatement>($1, std::move($3));
     }
     | if_statement {
-        $$ = $1;
+        $$ = std::move($1);
+    }
+    | do_loop {
+        $$ = std::move($1);
     }
     | PRINT STAR exp_list {
-        $$ = new TPrintStatement($3);
+        $$ = std::make_unique<TPrintStatement>(std::move($3));
     }
 
 exp_list:
     %empty {
-        $$ = std::vector<TExpression*> ();
+        $$ = std::move(std::vector<std::unique_ptr<TExpression>>());
     }
     | exp_list COMMA exp {
-        $1.push_back($3);
-        $$ = $1;
+        $1.push_back(std::move($3));
+        $$ = std::move($1);
     }
 
-%left "+" "-";
-%left "*" "/";
-
 if_statement:
-    else_if_part {$$ = $1;}
+    else_if_part {$$ = std::move($1);}
 
 if_part:
     IF "(" exp ")" THEN NEWLINE statements {
-        TIfStatement* stat = new TIfStatement();
-        stat->AddIf($3, std::move($7));
-        $$ = stat;
+        auto stat = std::make_unique<TIfStatement>();
+        stat->AddIf(std::move($3), std::move($7));
+        $$ = std::move(stat);
     }
 
 else_if_part:
     if_part {
-        $$ = $1;
+        $$ = std::move($1);
     }
     | else_if_part ELSE IF "(" exp ")" THEN NEWLINE statements {
-        $1->AddIf($5, std::move($9));
-        $$ = $1;
+        $1->AddIf(std::move($5), std::move($9));
+        $$ = std::move($1);
     }
     | else_if_part ELSE NEWLINE statements END IF {
         $1->AddElse(std::move($4));
-        $$ = $1;
+        $$ = std::move($1);
     }
     | else_if_part END IF {
-        $$ = $1;
+        $$ = std::move($1);
     }
 
-exp:
-    "number" {$$ = new TValueExpression(new TInteger($1));}
-    | "identifier" {$$ = new TIdentifierExpression($1);}
-    | exp "+" exp {$$ = new TSumExpression($1, $3); }
+do_loop:
+    DO "identifier" ASSIGN exp COMMA exp do_loop_step NEWLINE statements END DO {
+        $$ = std::make_unique<TDoLoopStatement>(std::move($2), std::move($4), std::move($6), std::move($7), std::move($9));
+    }
 
-    /* TODO
-    | exp "-" exp {$$ = $1 - $3; }
-    | exp "*" exp {$$ = $1 * $3; }
-    | exp "/" exp {$$ = $1 / $3; }
-    | "(" exp ")" {$$ = $2; };
-    */
+do_loop_step:
+    %empty {
+        $$ = std::make_unique<TValueExpression>(std::make_unique<TInteger>(1));
+    }
+    | COMMA exp {
+        $$ = std::move($2);
+    }
+
+
+%left "+" "-";
+%left "*" "/";
+
+exp:
+    "number" {$$ = std::make_unique<TValueExpression>(std::make_unique<TInteger>($1));}
+    | "identifier" {$$ = std::make_unique<TIdentifierExpression>(std::move($1));}
+    | exp "+" exp {$$ = std::make_unique<TSumExpression>(std::move($1), std::move($3)); }
+
+    | exp "-" exp {$$ = std::make_unique<TSubExpression>(std::move($1), std::move($3)); }
+    | exp "*" exp {$$ = std::make_unique<TMulExpression>(std::move($1), std::move($3)); }
+    | exp "/" exp {$$ = std::make_unique<TDivExpression>(std::move($1), std::move($3)); }
+    | "(" exp ")" {$$ = std::move($2); };
 
 %%
 

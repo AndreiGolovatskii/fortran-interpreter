@@ -26,55 +26,65 @@ class TInterpreter : public TVisitor {
 public:
     int Status() { return Status_; }
 
-    explicit TInterpreter(std::istream& cin = std::cin, std::ostream& cout = std::cout,
-                         std::ostream& cerr = std::cout)
-            : Cin_(cin), Cout_(cout), Cerr_(cerr) {}
-    void Run();
+    explicit TInterpreter(std::istream& cin = std::cin, std::ostream& cout = std::cout, std::ostream& cerr = std::cout)
+        : Cin_(cin), Cout_(cout), Cerr_(cerr) {}
 
-    void Visit(TSumExpression* expression) final {
-        expression->first->Accept(this);
-        expression->second->Accept(this);
-        std::unique_ptr<TType> first = std::move(expression->first->ResultValue);
-        std::unique_ptr<TType> second = std::move(expression->second->ResultValue);
+    std::unique_ptr<TType> VisitDoublePositionExpression(
+            TDoublePositionExpression* expression,
+            std::function<std::unique_ptr<TType>(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&)>
+                    operation) {
+        auto fist = expression->first->Accept(this);
+        auto second = expression->second->Accept(this);
 
-        expression->ResultValue = *(first) + *(second);
+        return operation(fist, second);
+    }
+
+    std::unique_ptr<TType> Visit(TSumExpression* expression) final {
+        return VisitDoublePositionExpression(expression, TypeAdd);
+    }
+
+    std::unique_ptr<TType> Visit(TSubExpression* expression) final {
+        return VisitDoublePositionExpression(expression, TypeSub);
+    }
+
+    virtual std::unique_ptr<TType> Visit(TMulExpression* expression) final {
+        return VisitDoublePositionExpression(expression, TypeMul);
+    }
+
+    virtual std::unique_ptr<TType> Visit(TDivExpression* expression) final {
+        return VisitDoublePositionExpression(expression, TypeDiv);
     }
 
     void Visit(TDeclaration* declaration) final {
         if (Vars_.count(declaration->VarName)) { throw RuntimeError("redefinition of " + declaration->VarName); }
-        Vars_[declaration->VarName] = std::unique_ptr<TType>(new TNone());
-    }
-
-    void Visit(TSubExpression* expression) final {
-        // TODO
+        Vars_[declaration->VarName] = GetDefaultValue(declaration->VarType);
     }
 
     void Visit(TAssignStatement* assign) final {
-        assign->Expr->Accept(this);
         if (Vars_.count(assign->VarName) == 0) {
             throw RuntimeError("Use of undeclared identifier " + assign->VarName);
         }
-        Vars_[assign->VarName] = std::move(assign->Expr->ResultValue);
+        Vars_[assign->VarName]->Assign(assign->Expr->Accept(this));
     }
 
-    void Visit(TIdentifierExpression* identifier) final {
+    std::unique_ptr<TType> Visit(TIdentifierExpression* identifier) final {
         if (Vars_.count(identifier->Identifier) == 0) {
             throw RuntimeError("Use of undeclared identifier " + identifier->Identifier);
         }
-        identifier->ResultValue = Vars_[identifier->Identifier]->Clone();
+        return Vars_[identifier->Identifier]->Clone();
     }
 
-    void Visit(TValueExpression* value) final { value->ResultValue = value->Value->Clone(); }
+    std::unique_ptr<TType> Visit(TValueExpression* value) final { return value->Value->Clone(); }
 
     void Visit(TPrintStatement* print) final {
-        for (auto* expr : print->Exprs) {
-            expr->Accept(this);
-            Cout_ << *(expr->ResultValue) << " ";
+        for (auto& expr : print->Exprs) {
+            expr->Accept(this)->Print(Cout_);
+            if (expr != print->Exprs.back()) { Cout_ << " "; }
         }
         Cout_ << std::endl;
     }
 
-    void Visit(std::vector<TStatement*>& operatorList) {
+    void Visit(std::vector<std::unique_ptr<TStatement>>& operatorList) {
         auto NextOperator_ = operatorList.begin();
         while (NextOperator_ != operatorList.end()) {
             (*NextOperator_)->Accept(this);
@@ -82,13 +92,31 @@ public:
         }
     }
 
-    void Visit(TIfStatement* ifStat) {
-        for (auto& simpleIf: ifStat->Components) {
-            simpleIf->Cond->Accept(this);
-            if (*(simpleIf->Cond->ResultValue)) {
+    void Visit(TIfStatement* ifStat) override {
+        for (auto& simpleIf : ifStat->Components) {
+            if (simpleIf->Cond->Accept(this)) {
                 Visit(simpleIf->Statements);
                 return;
             }
+        }
+    }
+
+    void Visit(TDoLoopStatement* doLoop) override {
+        Vars_.at(doLoop->VarName)->Assign(doLoop->StartExpression->Accept(this));
+
+        auto& iteratorValuePtr = Vars_.at(doLoop->VarName);
+        auto endValuePtr = doLoop->EndExpression->Accept(this);
+        auto stepValuePtr = doLoop->StepExpression->Accept(this);
+
+        auto& iteratorValue = dynamic_cast<TInteger&>(*iteratorValuePtr);
+        auto& endValue = dynamic_cast<TInteger&>(*endValuePtr);
+        auto& stepValue = dynamic_cast<TInteger&>(*stepValuePtr);
+        if (stepValue.Value == 0) {
+            throw std::logic_error("step must be non-zero");
+        }
+        while (!iteratorValue.Great(endValue)) {
+            Visit(doLoop->Statements);
+            iteratorValue.Add(stepValue);
         }
     }
 };
