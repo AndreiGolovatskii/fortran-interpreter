@@ -1,3 +1,10 @@
 4 42
 5
 7
+THIS IS TEXT
+WE CAN PRINT TEXT
+THIS IS HOW CHARACTER(LEN=4) = AbCdEfG WORKS: c = AbCd
+negative integers also supports a.e. -42
+also, operation priority
+4 + 2 * 2 =  8
+4 + 2 > 4 + 1 = T

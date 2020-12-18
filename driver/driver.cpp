@@ -14,14 +14,13 @@ int TDriver::parse(const std::string& f) {
 
 void TDriver::scan_begin() {
     scanner.set_debug(trace_scanning);
-  if (file.empty () || file == "-") {
-  } else {
-    stream.open(file);
-    scanner.yyrestart(&stream);
-  }
+    if (file.empty() || file == "-") {
+    } else {
+        stream.open(file);
+        scanner.yyrestart(&stream);
+    }
 }
 
-void TDriver::scan_end()
-{
+void TDriver::scan_end() {
     stream.close();
 }

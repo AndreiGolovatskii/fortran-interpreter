@@ -11,6 +11,7 @@
     class Scanner;
     class TDriver;
     #include "statements_forward_declaration.hh"
+    #include "types.hh"
 }
 
 // %param { TDriver &drv }
@@ -50,39 +51,65 @@
     ASSIGN "="
     MINUS "-"
     PLUS "+"
-    STAR "*"
     SLASH "/"
+    STAR "*"
+    GT ">"
+    LT "<"
+    EQV
+    NOT
+    AND
+    OR
+
     LPAREN "("
     RPAREN ")"
     DOUBLE_COLON "::"
     QUOTE "'"
-    DOUBLE_QUOTE """
+    DOUBLE_QUOTE "\""
 
     IF
     ELSE
     THEN
     DO
+    WHILE
 
     INTEGER
+    CHARACTER
+    LOGICAL
+
+    TRUE
+    FALSE
 
     PRINT
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
+%token <std::string> STRING
+
+%nterm <std::shared_ptr<TTypeDescription>> var_type
+%nterm <std::vector<std::string>> type_unnamed_parameters
+%nterm <std::vector<std::string>> paren_type_unnamed_parameters
+%nterm <std::vector<std::pair<std::string, std::string>>> type_named_parameters
+%nterm <std::vector<std::pair<std::string, std::string>>> paren_type_named_parameters
+
 %nterm <std::unique_ptr<TExpression>> exp
-%nterm <std::vector<std::string>> declaration_list
-%nterm <std::string> var_type
 %nterm <std::vector<std::unique_ptr<TExpression>>> exp_list
+
 %nterm <std::vector<std::unique_ptr<TStatement>>> declarations
-%nterm <std::vector<std::unique_ptr<TStatement>>> statements
 %nterm <std::vector<std::unique_ptr<TStatement>>> declaration
+%nterm <std::vector<std::string>> declaration_list
+
+%nterm <std::vector<std::unique_ptr<TStatement>>> statements
 %nterm <std::unique_ptr<TStatement>> statement
+
 %nterm <std::unique_ptr<TIfStatement>> if_statement
 %nterm <std::unique_ptr<TIfStatement>> if_part
 %nterm <std::unique_ptr<TIfStatement>> else_if_part
+
 %nterm <std::unique_ptr<TDoLoopStatement>> do_loop
 %nterm <std::unique_ptr<TExpression>> do_loop_step
+
+%nterm <std::unique_ptr<TDoWhileLoopStatement>> do_while_loop
 
 //%printer { yyo << $$; } <*>;
 
@@ -138,7 +165,75 @@ declaration:
     }
 
 var_type:
-    INTEGER {$$ = "integer";}
+    INTEGER paren_type_named_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TIntegerDescription>($2));
+    }
+    | INTEGER paren_type_unnamed_parameters {
+         $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TIntegerDescription>($2));
+    }
+    | CHARACTER paren_type_named_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TCharacterDescription>($2));
+    }
+    | CHARACTER paren_type_unnamed_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TCharacterDescription>($2));
+    }
+    | LOGICAL paren_type_unnamed_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TLogicalDescription>($2));
+    }
+    | LOGICAL paren_type_named_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TLogicalDescription>($2));
+    }
+
+
+paren_type_named_parameters:
+    %empty {
+        $$ = std::vector<std::pair<std::string, std::string>>();
+    }
+    | LPAREN type_named_parameters RPAREN {
+        $$ = std::move($2);
+    }
+
+type_named_parameters:
+    "identifier" ASSIGN "identifier" {
+        $$ = std::vector<std::pair<std::string, std::string>>();
+        $$.emplace_back($1, $3);
+    }
+    | "identifier" ASSIGN "number" {
+        $$ = std::vector<std::pair<std::string, std::string>>();
+        $$.emplace_back($1, std::to_string($3));
+    }
+    | "identifier" ASSIGN "identifier" COMMA type_named_parameters {
+        $$ = std::move($5);
+        $$.emplace_back($1, $3);
+    }
+    | "identifier" ASSIGN "number" COMMA type_named_parameters {
+        $$ = std::move($5);
+        $$.emplace_back($1, std::to_string($3));
+    }
+
+paren_type_unnamed_parameters:
+    LPAREN type_unnamed_parameters RPAREN {
+        $$ = std::move($2);
+    }
+
+type_unnamed_parameters:
+    "identifier" {
+        $$ = std::vector<std::string>();
+        $$.emplace_back(std::move($1));
+    }
+    | "number" {
+        $$ = std::vector<std::string>();
+        $$.emplace_back(std::to_string($1));
+    }
+    | "identifier" COMMA type_unnamed_parameters {
+       $$ = std::move($3);
+       $$.emplace_back(std::move($1));
+    }
+    | "number" COMMA type_unnamed_parameters {
+       $$ = std::move($3);
+       $$.emplace_back(std::to_string($1));
+    }
+
 
 declaration_list:
     "identifier" {
@@ -169,8 +264,16 @@ statement:
     | do_loop {
         $$ = std::move($1);
     }
+    | do_while_loop {
+        $$ = std::move($1);
+    }
     | PRINT STAR exp_list {
         $$ = std::make_unique<TPrintStatement>(std::move($3));
+    }
+
+do_while_loop:
+    DO WHILE LPAREN exp RPAREN NEWLINE statements END DO {
+        $$ = std::make_unique<TDoWhileLoopStatement>(std::move($4), std::move($7));
     }
 
 exp_list:
@@ -222,6 +325,11 @@ do_loop_step:
     }
 
 
+%right EQV;
+%right OR;
+%right AND;
+%right NOT;
+%left ">" "<" "==";
 %left "+" "-";
 %left "*" "/";
 
@@ -229,12 +337,20 @@ exp:
     "number" {$$ = std::make_unique<TValueExpression>(std::make_unique<TInteger>($1));}
     | "identifier" {$$ = std::make_unique<TIdentifierExpression>(std::move($1));}
     | exp "+" exp {$$ = std::make_unique<TSumExpression>(std::move($1), std::move($3)); }
-
     | exp "-" exp {$$ = std::make_unique<TSubExpression>(std::move($1), std::move($3)); }
     | exp "*" exp {$$ = std::make_unique<TMulExpression>(std::move($1), std::move($3)); }
     | exp "/" exp {$$ = std::make_unique<TDivExpression>(std::move($1), std::move($3)); }
-    | "(" exp ")" {$$ = std::move($2); };
+    | exp ">" exp {$$ = std::make_unique<TGtExpression>(std::move($1), std::move($3)); }
+    | exp "<" exp {$$ = std::make_unique<TLtExpression>(std::move($1), std::move($3)); }
 
+    | "(" exp ")" {$$ = std::move($2); };
+    | STRING {$$ = std::make_unique<TValueExpression>(std::make_unique<TCharacter>($1));}
+    | TRUE {$$ = std::make_unique<TValueExpression>(std::make_unique<TLogical>(true));}
+    | FALSE {$$ = std::make_unique<TValueExpression>(std::make_unique<TLogical>(false));}
+    | exp EQV exp {$$ = std::make_unique<TEqvExpression>(std::move($1), std::move($3)); }
+    | NOT exp {$$ = std::make_unique<TNotExpression>(std::move($2)); }
+    | exp AND exp {$$ = std::make_unique<TAndExpression>(std::move($1), std::move($3));}
+    | exp OR exp {$$ = std::make_unique<TOrExpression>(std::move($1), std::move($3));}
 %%
 
 void

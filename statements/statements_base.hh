@@ -7,12 +7,12 @@
 class TStatement {
 public:
     virtual void Accept(TVisitor* visitor) = 0;
-    virtual ~TStatement() = default;
+    virtual ~TStatement()                  = default;
 };
 
 
 class TExpression {
 public:
     virtual std::unique_ptr<TType> Accept(TVisitor* visitor) = 0;
-    virtual ~TExpression() = default;
+    virtual ~TExpression()                                   = default;
 };

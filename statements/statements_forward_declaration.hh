@@ -6,6 +6,7 @@ class TAssignStatement;
 class TDeclaration;
 class TIfStatement;
 class TDoLoopStatement;
+class TDoWhileLoopStatement;
 
 class TExpression;
 class TValueExpression;
@@ -14,3 +15,9 @@ class TSubExpression;
 class TSumExpression;
 class TMulExpression;
 class TDivExpression;
+class TGtExpression;
+class TLtExpression;
+class TEqvExpression;
+class TNotExpression;
+class TAndExpression;
+class TOrExpression;

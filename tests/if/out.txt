@@ -1,0 +1,9 @@
+a = 3 > -1
+b = 3 < 4
+LOGICAL j is TRUE
+LOGICAL g is eqv to .FALSE.
+.not. g is .TRUE.
+(.not. g) .and. a < b is .FALSE.
+(.not. g) .and. a < b is eqv to .not. g .and. a < b
+string 12349 great than 123456789
+g is T
