@@ -3,6 +3,6 @@ program MAIN
     integer :: z
     integer x, y
 
-    InTegER::i, j, k
-    InTEGEr ::l, m, n
+    InTegER :: i, j, k
+    InTEGEr :: l, m, n
 end

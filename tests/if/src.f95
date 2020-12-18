@@ -43,7 +43,6 @@ program MMMM
         PRINT *, "(.not. g) .and. a < b is eqv to .not. g .and. a < b"
     end if
 
-
     str1 = "123456789"
 
     if ("12349" > str1) THEN

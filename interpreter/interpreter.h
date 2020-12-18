@@ -24,7 +24,9 @@ class TInterpreter : public TVisitor {
     std::ostream& Cerr_;
 
 public:
-    int Status() { return Status_; }
+    int Status() {
+        return Status_;
+    }
 
     explicit TInterpreter(std::istream& cin = std::cin, std::ostream& cout = std::cout, std::ostream& cerr = std::cout)
         : Cin_(cin), Cout_(cout), Cerr_(cerr) {}
@@ -33,7 +35,7 @@ public:
             TDoublePositionExpression* expression,
             const std::function<std::unique_ptr<TType>(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&)>&
                     operation) {
-        auto fist = expression->first->Accept(this);
+        auto fist   = expression->first->Accept(this);
         auto second = expression->second->Accept(this);
 
         return operation(fist, second);
@@ -80,7 +82,9 @@ public:
     }
 
     void Visit(TDeclaration* declaration) final {
-        if (Vars_.count(declaration->VarName)) { throw RuntimeError("redefinition of " + declaration->VarName); }
+        if (Vars_.count(declaration->VarName)) {
+            throw RuntimeError("redefinition of " + declaration->VarName);
+        }
         Vars_[declaration->VarName] = declaration->VarType->GetDefault();
     }
 
@@ -98,12 +102,16 @@ public:
         return Vars_[identifier->Identifier]->Clone();
     }
 
-    std::unique_ptr<TType> Visit(TValueExpression* value) final { return value->Value->Clone(); }
+    std::unique_ptr<TType> Visit(TValueExpression* value) final {
+        return value->Value->Clone();
+    }
 
     void Visit(TPrintStatement* print) final {
         for (auto& expr : print->Exprs) {
             expr->Accept(this)->Print(Cout_);
-            if (expr != print->Exprs.back()) { Cout_ << " "; }
+            if (expr != print->Exprs.back()) {
+                Cout_ << " ";
+            }
         }
         Cout_ << std::endl;
     }
@@ -129,12 +137,12 @@ public:
         Vars_.at(doLoop->VarName)->Assign(doLoop->StartExpression->Accept(this));
 
         auto& iteratorValuePtr = Vars_.at(doLoop->VarName);
-        auto endValuePtr = doLoop->EndExpression->Accept(this);
-        auto stepValuePtr = doLoop->StepExpression->Accept(this);
+        auto endValuePtr       = doLoop->EndExpression->Accept(this);
+        auto stepValuePtr      = doLoop->StepExpression->Accept(this);
 
         auto& iteratorValue = dynamic_cast<TInteger&>(*iteratorValuePtr);
-        int endValue = dynamic_cast<TInteger&>(*endValuePtr).Value;
-        int stepValue = dynamic_cast<TInteger&>(*stepValuePtr).Value;
+        int endValue        = dynamic_cast<TInteger&>(*endValuePtr).Value;
+        int stepValue       = dynamic_cast<TInteger&>(*stepValuePtr).Value;
         if (stepValue == 0) {
             throw std::logic_error("step must be non-zero");
         }

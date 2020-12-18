@@ -3,7 +3,6 @@ program priority_check
     CHARACTER(10) :: s
     LOGICAL :: l
 
-
     if (10 + 1 < 0 * 0 + 0 + 20) THEN
         print *, "CASE 1 OK"
     end if

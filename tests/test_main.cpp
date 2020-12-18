@@ -47,14 +47,18 @@ protected:
 };
 
 
-TEST_P(TInterpreterTest, ParseTest) { TestParse(GetParam()); }
+TEST_P(TInterpreterTest, ParseTest) {
+    TestParse(GetParam());
+}
 
 
 std::vector<std::string> FilesToTest(const std::vector<std::string>& testDirs) {
     std::vector<std::string> res;
     for (const auto& testDir : testDirs) {
         for (auto& file : std::filesystem::directory_iterator(testDir)) {
-            if (file.is_regular_file()) { res.push_back(file.path()); }
+            if (file.is_regular_file()) {
+                res.push_back(file.path());
+            }
         }
     }
     return res;
@@ -63,13 +67,21 @@ std::vector<std::string> FilesToTest(const std::vector<std::string>& testDirs) {
 INSTANTIATE_TEST_SUITE_P(ParseTest, TInterpreterTest, ::testing::ValuesIn(FilesToTest({"parse_tests"})));
 
 
-TEST_F(TInterpreterTest, SimplePrintStatements) { TestInterpreter("prints"); }
+TEST_F(TInterpreterTest, SimplePrintStatements) {
+    TestInterpreter("prints");
+}
 
 
-TEST_F(TInterpreterTest, SimpleDoStatements) { TestInterpreter("do"); }
+TEST_F(TInterpreterTest, SimpleDoStatements) {
+    TestInterpreter("do");
+}
 
 
-TEST_F(TInterpreterTest, SimpleIfStatements) { TestInterpreter("if"); }
+TEST_F(TInterpreterTest, SimpleIfStatements) {
+    TestInterpreter("if");
+}
 
 
-TEST_F(TInterpreterTest, PriorityCheck) {TestInterpreter("operator_priority");}
+TEST_F(TInterpreterTest, PriorityCheck) {
+    TestInterpreter("operator_priority");
+}

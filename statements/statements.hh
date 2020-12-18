@@ -15,7 +15,9 @@ class TPrintStatement : public TStatement {
 public:
     std::vector<std::unique_ptr<TExpression>> Exprs;
     explicit TPrintStatement(std::vector<std::unique_ptr<TExpression>> exprs) : Exprs(std::move(exprs)) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
+    void Accept(TVisitor* visitor) final {
+        visitor->Visit(this);
+    }
 };
 
 
@@ -23,7 +25,9 @@ class TAssignStatement : public TStatement {
 public:
     TAssignStatement(const std::string& varName, std::unique_ptr<TExpression>&& expr)
         : VarName(LoverCase(varName)), Expr(std::move(expr)) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
+    void Accept(TVisitor* visitor) final {
+        visitor->Visit(this);
+    }
     std::string VarName;
     std::unique_ptr<TExpression> Expr;
 };
@@ -35,7 +39,9 @@ public:
     std::shared_ptr<TTypeDescription> VarType;
     TDeclaration(const std::string& varName, std::shared_ptr<TTypeDescription> type)
         : VarName(LoverCase(varName)), VarType(type) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
+    void Accept(TVisitor* visitor) final {
+        visitor->Visit(this);
+    }
 };
 
 
@@ -51,7 +57,9 @@ class TIfStatement : public TStatement {
 public:
     std::vector<std::unique_ptr<TSimpleIfStatement>> Components;
     TIfStatement() {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
+    void Accept(TVisitor* visitor) final {
+        visitor->Visit(this);
+    }
     void AddElse(std::vector<std::unique_ptr<TStatement>>&& ops) {
         AddIf(std::make_unique<TValueExpression>(std::make_unique<TLogical>(true)), std::move(ops));
     }
@@ -74,7 +82,9 @@ public:
         : VarName(std::move(varName)), StartExpression(std::move(startExpression)),
           EndExpression(std::move(endExpression)), StepExpression(std::move(stepExpression)),
           Statements(std::move(statements)) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
+    void Accept(TVisitor* visitor) final {
+        visitor->Visit(this);
+    }
 };
 
 class TDoWhileLoopStatement : public TStatement {
@@ -84,5 +94,7 @@ public:
     TDoWhileLoopStatement(std::unique_ptr<TExpression>&& condition,
                           std::vector<std::unique_ptr<TStatement>>&& statements)
         : Condition(std::move(condition)), Statements(std::move(statements)) {}
-    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
+    void Accept(TVisitor* visitor) final {
+        visitor->Visit(this);
+    }
 };

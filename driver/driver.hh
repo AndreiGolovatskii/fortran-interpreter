@@ -36,7 +36,9 @@ public:
         return interpreter.Status();
     }
 
-    void SetStatements(std::vector<std::unique_ptr<TStatement>>&& statements) { Statements_ = std::move(statements); }
+    void SetStatements(std::vector<std::unique_ptr<TStatement>>&& statements) {
+        Statements_ = std::move(statements);
+    }
 
     void SetDeclarations(std::vector<std::unique_ptr<TStatement>>&& declarations) {
         Declarations_ = std::move(declarations);

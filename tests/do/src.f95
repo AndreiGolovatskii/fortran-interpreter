@@ -16,14 +16,12 @@ program DO_PARSE
         print *, i
     end do
 
-
     print *, "FACTORIAL OF 5"
     fac = 1
     do i = 1, 5, 1
         fac = fac * i
     end do
     print *, fac
-
 
     print *, "from 0 to 4"
     i = 0

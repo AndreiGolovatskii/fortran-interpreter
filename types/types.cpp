@@ -6,7 +6,9 @@ std::ostream& operator<<(std::ostream& out, const TType& type) {
 }
 
 std::string LoverCase(std::string s) {
-    for (char& c : s) { c = std::tolower(c); }
+    for (char& c : s) {
+        c = std::tolower(c);
+    }
     return s;
 }
 
@@ -32,11 +34,13 @@ std::unique_ptr<TLogical> Gt(const std::unique_ptr<TType>& first, const std::uni
     try {
         return std::make_unique<TLogical>(dynamic_cast<TInteger&>(*first).Value >
                                           dynamic_cast<TInteger&>(*second).Value);
-    } catch (const std::bad_cast& _) {}
+    } catch (const std::bad_cast& _) {
+    }
     try {
         return std::make_unique<TLogical>(dynamic_cast<TCharacter&>(*first).Value >
                                           dynamic_cast<TCharacter&>(*second).Value);
-    } catch (const std::bad_cast& _) {}
+    } catch (const std::bad_cast& _) {
+    }
     throw std::bad_cast();
 }
 
@@ -45,11 +49,13 @@ std::unique_ptr<TLogical> Lt(const std::unique_ptr<TType>& first, const std::uni
     try {
         return std::make_unique<TLogical>(dynamic_cast<TInteger&>(*first).Value <
                                           dynamic_cast<TInteger&>(*second).Value);
-    } catch (const std::bad_cast& _) {}
+    } catch (const std::bad_cast& _) {
+    }
     try {
         return std::make_unique<TLogical>(dynamic_cast<TCharacter&>(*first).Value <
                                           dynamic_cast<TCharacter&>(*second).Value);
-    } catch (const std::bad_cast& _) {}
+    } catch (const std::bad_cast& _) {
+    }
     throw std::bad_cast();
 }
 
@@ -71,9 +77,12 @@ std::unique_ptr<TLogical> Or(const std::unique_ptr<TType>& first, const std::uni
 std::unique_ptr<TLogical> Not(const std::unique_ptr<TType>& first) {
     try {
         return std::make_unique<TLogical>(!(dynamic_cast<TLogical&>(*first).Value));
-    } catch (const std::bad_cast& _) {}
+    } catch (const std::bad_cast& _) {
+    }
     throw std::bad_cast();
 }
 
 
-bool GetLogicalValue(const std::unique_ptr<TType>& obj) { return dynamic_cast<TLogical&>(*obj).Value; }
+bool GetLogicalValue(const std::unique_ptr<TType>& obj) {
+    return dynamic_cast<TLogical&>(*obj).Value;
+}
