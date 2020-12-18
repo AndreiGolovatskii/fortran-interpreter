@@ -11,6 +11,7 @@
     class Scanner;
     class TDriver;
     #include "statements_forward_declaration.hh"
+    #include "types.hh"
 }
 
 // %param { TDriver &drv }
@@ -64,6 +65,7 @@
     DO
 
     INTEGER
+    CHARACTER
 
     PRINT
 ;
@@ -71,17 +73,27 @@
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 %token <std::string> STRING
+
+%nterm <std::shared_ptr<TTypeDescription>> var_type
+%nterm <std::vector<std::string>> type_unnamed_parameters
+%nterm <std::vector<std::string>> paren_type_unnamed_parameters
+%nterm <std::vector<std::pair<std::string, std::string>>> type_named_parameters
+%nterm <std::vector<std::pair<std::string, std::string>>> paren_type_named_parameters
+
 %nterm <std::unique_ptr<TExpression>> exp
-%nterm <std::vector<std::string>> declaration_list
-%nterm <std::string> var_type
 %nterm <std::vector<std::unique_ptr<TExpression>>> exp_list
+
 %nterm <std::vector<std::unique_ptr<TStatement>>> declarations
-%nterm <std::vector<std::unique_ptr<TStatement>>> statements
 %nterm <std::vector<std::unique_ptr<TStatement>>> declaration
+%nterm <std::vector<std::string>> declaration_list
+
+%nterm <std::vector<std::unique_ptr<TStatement>>> statements
 %nterm <std::unique_ptr<TStatement>> statement
+
 %nterm <std::unique_ptr<TIfStatement>> if_statement
 %nterm <std::unique_ptr<TIfStatement>> if_part
 %nterm <std::unique_ptr<TIfStatement>> else_if_part
+
 %nterm <std::unique_ptr<TDoLoopStatement>> do_loop
 %nterm <std::unique_ptr<TExpression>> do_loop_step
 
@@ -139,7 +151,67 @@ declaration:
     }
 
 var_type:
-    INTEGER {$$ = "integer";}
+    INTEGER paren_type_named_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TIntegerDescription>($2));
+    }
+    | INTEGER paren_type_unnamed_parameters {
+         $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TIntegerDescription>($2));
+    }
+    | CHARACTER paren_type_named_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TCharacterDescription>($2));
+    }
+    | CHARACTER paren_type_unnamed_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TCharacterDescription>($2));
+    }
+paren_type_named_parameters:
+    %empty {
+        $$ = std::vector<std::pair<std::string, std::string>>();
+    }
+    | LPAREN type_named_parameters RPAREN {
+        $$ = std::move($2);
+    }
+
+type_named_parameters:
+    "identifier" ASSIGN "identifier" {
+        $$ = std::vector<std::pair<std::string, std::string>>();
+        $$.emplace_back($1, $3);
+    }
+    | "identifier" ASSIGN "number" {
+        $$ = std::vector<std::pair<std::string, std::string>>();
+        $$.emplace_back($1, std::to_string($3));
+    }
+    | "identifier" ASSIGN "identifier" COMMA type_named_parameters {
+        $$ = std::move($5);
+        $$.emplace_back($1, $3);
+    }
+    | "identifier" ASSIGN "number" COMMA type_named_parameters {
+        $$ = std::move($5);
+        $$.emplace_back($1, std::to_string($3));
+    }
+
+paren_type_unnamed_parameters:
+    LPAREN type_unnamed_parameters RPAREN {
+        $$ = std::move($2);
+    }
+
+type_unnamed_parameters:
+    "identifier" {
+        $$ = std::vector<std::string>();
+        $$.emplace_back(std::move($1));
+    }
+    | "number" {
+        $$ = std::vector<std::string>();
+        $$.emplace_back(std::to_string($1));
+    }
+    | "identifier" COMMA type_unnamed_parameters {
+       $$ = std::move($3);
+       $$.emplace_back(std::move($1));
+    }
+    | "number" COMMA type_unnamed_parameters {
+       $$ = std::move($3);
+       $$.emplace_back(std::to_string($1));
+    }
+
 
 declaration_list:
     "identifier" {
@@ -235,7 +307,7 @@ exp:
     | exp "*" exp {$$ = std::make_unique<TMulExpression>(std::move($1), std::move($3)); }
     | exp "/" exp {$$ = std::make_unique<TDivExpression>(std::move($1), std::move($3)); }
     | "(" exp ")" {$$ = std::move($2); };
-    | STRING {$$ = std::make_unique<TValueExpression>(std::make_unique<TString>($1));}
+    | STRING {$$ = std::make_unique<TValueExpression>(std::make_unique<TCharacter>($1));}
 
 %%
 

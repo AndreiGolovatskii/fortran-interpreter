@@ -58,7 +58,7 @@ blank [ \t\r]
 "::"       return yy::parser::make_DOUBLE_COLON(loc);
 ","        return yy::parser::make_COMMA(loc);
 "'"        return yy::parser::make_QUOTE(loc);
-"\""        return yy::parser::make_QUOTE(loc);
+"\""       return yy::parser::make_QUOTE(loc);
 
 "program"  return yy::parser::make_PROGRAM(loc);
 "end"      return yy::parser::make_END(loc);
@@ -69,6 +69,7 @@ blank [ \t\r]
 "do"       return yy::parser::make_DO(loc);
 
 "INTEGER"  return yy::parser::make_INTEGER(loc);
+"CHARACTER" return yy::parser::make_CHARACTER(loc);
 
 "print"    return yy::parser::make_PRINT(loc);
 

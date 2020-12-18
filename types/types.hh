@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cassert>
 #include <iostream>
 #include <utility>
+#include <vector>
 
 class TType {
 public:
@@ -34,24 +36,77 @@ public:
 };
 
 
-class TString : public TType {
+class TCharacter : public TType {
 public:
     std::string Value;
-    explicit TString(std::string value) : Value(std::move(value)) {}
+    size_t Len;
+    explicit TCharacter(std::string value) : Value(std::move(value)), Len(Value.size()) {}
+    explicit TCharacter(int len) : Value(), Len(len) {}
+
     void Print(std::ostream& out) const override { out << Value; };
 
     [[nodiscard]] std::unique_ptr<TType> Clone() const override {
-        return std::unique_ptr<TType>(std::make_unique<TString>(Value));
+        return std::unique_ptr<TType>(std::make_unique<TCharacter>(*this));
     }
 
     explicit operator bool() const override { return !Value.empty(); }
-    void Assign(const std::unique_ptr<TType>& other) override { Value = dynamic_cast<TString&>(*other).Value; }
+    void Assign(const std::unique_ptr<TType>& other) override {
+        Value = dynamic_cast<TCharacter&>(*other).Value;
+        Value.resize(std::min(Len, Value.size()));
+    }
 };
 
 std::string LoverCase(std::string s);
 
 std::unique_ptr<TType> GetDefaultValue(const std::string& type);
 
+class TTypeDescription {
+public:
+    virtual std::unique_ptr<TType> GetDefault() const = 0;
+    virtual void SetAttributes(const std::vector<std::string>& values) = 0;
+    virtual void SetAttributes(const std::vector<std::pair<std::string, std::string>>& kvalues) = 0;
+    virtual ~TTypeDescription() = default;
+};
+
+class TIntegerDescription : public TTypeDescription {
+public:
+    explicit TIntegerDescription(const std::vector<std::string>& values) { SetAttributes(values); }
+    explicit TIntegerDescription(const std::vector<std::pair<std::string, std::string>>& kvalues) {
+        SetAttributes(kvalues);
+    }
+    std::unique_ptr<TType> GetDefault() const override { return std::unique_ptr<TType>(std::make_unique<TInteger>()); }
+    void SetAttributes(const std::vector<std::string>& values) override {
+        if (values.size() > 1 || values.size() == 1 && values[0] != "4") { throw std::logic_error("only 4-byte integers supports"); }
+    }
+    void SetAttributes(const std::vector<std::pair<std::string, std::string>>& kvalues) override {
+        if (kvalues.size() > 1 || kvalues.size() == 1 && kvalues[0] != std::make_pair(std::string("KIND"), std::string("4"))) {
+            throw std::logic_error("only 4-byte integers supports");
+        }
+    }
+};
+
+class TCharacterDescription : public TTypeDescription {
+public:
+    explicit TCharacterDescription(const std::vector<std::string>& values) { SetAttributes(values); }
+    explicit TCharacterDescription(const std::vector<std::pair<std::string, std::string>>& kvalues) {
+        SetAttributes(kvalues);
+    }
+    int Len = 1;
+    std::unique_ptr<TType> GetDefault() const override {
+        return std::unique_ptr<TType>(std::make_unique<TCharacter>(Len));
+    }
+
+    void SetAttributes(const std::vector<std::string>& values) override {
+        if (values.size() > 1) { throw std::logic_error("only len attribute supports"); }
+        Len = std::stol(values[0]);
+        if (Len < 0) { Len = 0; }
+    }
+    void SetAttributes(const std::vector<std::pair<std::string, std::string>>& kvalues) override {
+        if (kvalues.size() > 1 || kvalues.size() == 1 && kvalues[0].first != "LEN") { throw std::logic_error("only len attribute supports"); }
+        Len = std::stol(kvalues[0].second);
+        if (Len < 0) { Len = 0; }
+    }
+};
 
 std::unique_ptr<TType> TypeAdd(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);
 std::unique_ptr<TType> TypeSub(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);

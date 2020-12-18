@@ -32,9 +32,9 @@ public:
 class TDeclaration : public TStatement {
 public:
     std::string VarName;
-    std::string VarType;
-    TDeclaration(const std::string& varName, const std::string& type)
-        : VarName(LoverCase(varName)), VarType(LoverCase(type)) {}
+    std::shared_ptr<TTypeDescription> VarType;
+    TDeclaration(const std::string& varName, std::shared_ptr<TTypeDescription> type)
+        : VarName(LoverCase(varName)), VarType(type) {}
     void Accept(TVisitor* visitor) final { visitor->Visit(this); }
 };
 

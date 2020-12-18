@@ -57,7 +57,7 @@ public:
 
     void Visit(TDeclaration* declaration) final {
         if (Vars_.count(declaration->VarName)) { throw RuntimeError("redefinition of " + declaration->VarName); }
-        Vars_[declaration->VarName] = GetDefaultValue(declaration->VarType);
+        Vars_[declaration->VarName] = declaration->VarType->GetDefault();
     }
 
     void Visit(TAssignStatement* assign) final {
