@@ -6,6 +6,7 @@ class TAssignStatement;
 class TDeclaration;
 class TIfStatement;
 class TDoLoopStatement;
+class TDoWhileLoopStatement;
 
 class TExpression;
 class TValueExpression;

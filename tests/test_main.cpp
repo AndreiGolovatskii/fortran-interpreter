@@ -65,7 +65,11 @@ INSTANTIATE_TEST_SUITE_P(ParseTest, TInterpreterTest, ::testing::ValuesIn(FilesT
 
 TEST_F(TInterpreterTest, SimplePrintStatements) { TestInterpreter("prints"); }
 
+
 TEST_F(TInterpreterTest, SimpleDoStatements) { TestInterpreter("do"); }
 
 
 TEST_F(TInterpreterTest, SimpleIfStatements) { TestInterpreter("if"); }
+
+
+TEST_F(TInterpreterTest, PriorityCheck) {TestInterpreter("operator_priority");}

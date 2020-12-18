@@ -69,6 +69,7 @@ blank [ \t\r]
 "then"     return yy::parser::make_THEN(loc);
 "else"     return yy::parser::make_ELSE(loc);
 "do"       return yy::parser::make_DO(loc);
+"while"    return yy::parser::make_WHILE(loc);
 
 "INTEGER"     return yy::parser::make_INTEGER(loc);
 "CHARACTER"   return yy::parser::make_CHARACTER(loc);

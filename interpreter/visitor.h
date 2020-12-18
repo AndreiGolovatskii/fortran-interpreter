@@ -9,6 +9,7 @@ public:
     virtual void Visit(TPrintStatement* write) = 0;
     virtual void Visit(TIfStatement*) = 0;
     virtual void Visit(TDoLoopStatement*) = 0;
+    virtual void Visit(TDoWhileLoopStatement*) = 0;
 
     virtual std::unique_ptr<TType> Visit(TSumExpression*) = 0;
     virtual std::unique_ptr<TType> Visit(TSubExpression*) = 0;

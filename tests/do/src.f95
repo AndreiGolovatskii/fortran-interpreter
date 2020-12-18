@@ -23,4 +23,12 @@ program DO_PARSE
         fac = fac * i
     end do
     print *, fac
+
+
+    print *, "from 0 to 4"
+    i = 0
+    do while (i < 5)
+        print *, i
+        i = i + 1
+    end do
 end program DO_PARSE

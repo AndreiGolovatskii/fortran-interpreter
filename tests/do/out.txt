@@ -10,3 +10,9 @@ FROM -1 to -5, step -2
 -5
 FACTORIAL OF 5
         120
+from 0 to 4
+0
+1
+2
+3
+4

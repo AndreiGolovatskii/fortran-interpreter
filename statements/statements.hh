@@ -76,3 +76,13 @@ public:
           Statements(std::move(statements)) {}
     void Accept(TVisitor* visitor) final { visitor->Visit(this); }
 };
+
+class TDoWhileLoopStatement : public TStatement {
+public:
+    std::unique_ptr<TExpression> Condition;
+    std::vector<std::unique_ptr<TStatement>> Statements;
+    TDoWhileLoopStatement(std::unique_ptr<TExpression>&& condition,
+                          std::vector<std::unique_ptr<TStatement>>&& statements)
+        : Condition(std::move(condition)), Statements(std::move(statements)) {}
+    void Accept(TVisitor* visitor) final { visitor->Visit(this); }
+};

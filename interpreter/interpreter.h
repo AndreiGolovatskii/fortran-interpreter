@@ -143,4 +143,10 @@ public:
             iteratorValue.Value += stepValue;
         }
     }
+
+    void Visit(TDoWhileLoopStatement* doWhileLoop) override {
+        while (GetLogicalValue(doWhileLoop->Condition->Accept(this))) {
+            Visit(doWhileLoop->Statements);
+        }
+    }
 };

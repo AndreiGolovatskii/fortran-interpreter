@@ -70,6 +70,7 @@
     ELSE
     THEN
     DO
+    WHILE
 
     INTEGER
     CHARACTER
@@ -107,6 +108,8 @@
 
 %nterm <std::unique_ptr<TDoLoopStatement>> do_loop
 %nterm <std::unique_ptr<TExpression>> do_loop_step
+
+%nterm <std::unique_ptr<TDoWhileLoopStatement>> do_while_loop
 
 //%printer { yyo << $$; } <*>;
 
@@ -261,8 +264,16 @@ statement:
     | do_loop {
         $$ = std::move($1);
     }
+    | do_while_loop {
+        $$ = std::move($1);
+    }
     | PRINT STAR exp_list {
         $$ = std::make_unique<TPrintStatement>(std::move($3));
+    }
+
+do_while_loop:
+    DO WHILE LPAREN exp RPAREN NEWLINE statements END DO {
+        $$ = std::make_unique<TDoWhileLoopStatement>(std::move($4), std::move($7));
     }
 
 exp_list:
@@ -314,6 +325,11 @@ do_loop_step:
     }
 
 
+%right EQV;
+%right OR;
+%right AND;
+%right NOT;
+%left ">" "<" "==";
 %left "+" "-";
 %left "*" "/";
 
