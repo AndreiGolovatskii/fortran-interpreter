@@ -56,7 +56,7 @@
     RPAREN ")"
     DOUBLE_COLON "::"
     QUOTE "'"
-    DOUBLE_QUOTE """
+    DOUBLE_QUOTE "\""
 
     IF
     ELSE
@@ -70,6 +70,7 @@
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
+%token <std::string> STRING
 %nterm <std::unique_ptr<TExpression>> exp
 %nterm <std::vector<std::string>> declaration_list
 %nterm <std::string> var_type
@@ -234,6 +235,7 @@ exp:
     | exp "*" exp {$$ = std::make_unique<TMulExpression>(std::move($1), std::move($3)); }
     | exp "/" exp {$$ = std::make_unique<TDivExpression>(std::move($1), std::move($3)); }
     | "(" exp ")" {$$ = std::move($2); };
+    | STRING {$$ = std::make_unique<TValueExpression>(std::make_unique<TString>($1));}
 
 %%
 

@@ -6,4 +6,7 @@ program MMMM
     a = a + 1
     print *, a
     print *, 1 + a + 1
+
+    print *, "THIS IS TEXT"
+    print *, "WE CAN PRINT", " ", "TEXT"
 end

@@ -65,7 +65,7 @@ INSTANTIATE_TEST_SUITE_P(ParseTest, TInterpreterTest, ::testing::ValuesIn(FilesT
 
 TEST_F(TInterpreterTest, SimplePrintStatements) { TestInterpreter("prints"); }
 
-//TEST_F(TInterpreterTest, SimpleIfStatements) { TestInterpreter("simple_statements/if_block.f95"); }
+TEST_F(TInterpreterTest, SimpleDoStatements) { TestInterpreter("do"); }
 
 
 //TEST_F(TInterpreterTest, DoStatements) { TestInterpreter("simple_statements/do_statements.f95"); }

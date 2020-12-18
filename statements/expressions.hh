@@ -1,7 +1,7 @@
 #pragma once
 
-#include "visitor.h"
 #include "statements_base.hh"
+#include "visitor.h"
 
 
 class TIdentifierExpression : public TExpression {
@@ -39,7 +39,7 @@ public:
 class TMulExpression : public TDoublePositionExpression {
 public:
     TMulExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
-            : TDoublePositionExpression(std::move(first), std::move(second)) {}
+        : TDoublePositionExpression(std::move(first), std::move(second)) {}
     std::unique_ptr<TType> Accept(TVisitor* visitor) final { return visitor->Visit(this); }
 };
 
@@ -47,7 +47,7 @@ public:
 class TDivExpression : public TDoublePositionExpression {
 public:
     TDivExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
-            : TDoublePositionExpression(std::move(first), std::move(second)) {}
+        : TDoublePositionExpression(std::move(first), std::move(second)) {}
     std::unique_ptr<TType> Accept(TVisitor* visitor) final { return visitor->Visit(this); }
 };
 
@@ -55,6 +55,7 @@ public:
 class TValueExpression : public TExpression {
 public:
     std::unique_ptr<TType> Value;
-    TValueExpression(std::unique_ptr<TType>&& value) : Value(std::move(value)) {}
+    explicit TValueExpression(std::unique_ptr<TType>&& value) : Value(std::move(value)) {}
     std::unique_ptr<TType> Accept(TVisitor* visitor) final { return visitor->Visit(this); }
 };
+

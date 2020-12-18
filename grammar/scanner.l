@@ -21,6 +21,10 @@
     const std::string &s,
     const yy::parser::location_type& loc
   );
+  yy::parser::symbol_type make_STRING(
+      const std::string &s,
+      const yy::parser::location_type& loc
+    );
 %}
 
 id    [a-zA-Z][a-zA-Z_0-9]*
@@ -54,7 +58,7 @@ blank [ \t\r]
 "::"       return yy::parser::make_DOUBLE_COLON(loc);
 ","        return yy::parser::make_COMMA(loc);
 "'"        return yy::parser::make_QUOTE(loc);
-"""        return yy::parser::make_QUOTE(loc);
+"\""        return yy::parser::make_QUOTE(loc);
 
 "program"  return yy::parser::make_PROGRAM(loc);
 "end"      return yy::parser::make_END(loc);
@@ -70,6 +74,8 @@ blank [ \t\r]
 
 {int}      return make_NUMBER(yytext, loc);
 {id}       return yy::parser::make_IDENTIFIER(yytext, loc);
+
+["]([^"\\\n]|\\.|\\\n)*["] return make_STRING(yytext, loc);
 
 .          {
                 throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
@@ -87,4 +93,11 @@ yy::parser::symbol_type make_NUMBER(
   if (! (INT_MIN <= n && n <= INT_MAX && errno != ERANGE))
     throw yy::parser::syntax_error(loc, "integer is out of range: " + s);
   return yy::parser::make_NUMBER((int) n, loc);
+}
+
+yy::parser::symbol_type make_STRING(
+  const std::string &s,
+  const yy::parser::location_type& loc
+) {
+  return yy::parser::make_STRING(s.substr(1, s.size() - 2), loc);
 }

@@ -114,7 +114,7 @@ public:
         if (stepValue.Value == 0) {
             throw std::logic_error("step must be non-zero");
         }
-        while (!iteratorValue.Great(endValue)) {
+        while (stepValue.Value > 0  && !iteratorValue.Great(endValue) || stepValue.Value < 0 && !iteratorValue.Less(endValue)) {
             Visit(doLoop->Statements);
             iteratorValue.Add(stepValue);
         }
