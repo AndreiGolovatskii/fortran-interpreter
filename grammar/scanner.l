@@ -59,6 +59,8 @@ blank [ \t\r]
 ","        return yy::parser::make_COMMA(loc);
 "'"        return yy::parser::make_QUOTE(loc);
 "\""       return yy::parser::make_QUOTE(loc);
+">"        return yy::parser::make_GT(loc);
+"<"        return yy::parser::make_LT(loc);
 
 "program"  return yy::parser::make_PROGRAM(loc);
 "end"      return yy::parser::make_END(loc);
@@ -68,8 +70,16 @@ blank [ \t\r]
 "else"     return yy::parser::make_ELSE(loc);
 "do"       return yy::parser::make_DO(loc);
 
-"INTEGER"  return yy::parser::make_INTEGER(loc);
-"CHARACTER" return yy::parser::make_CHARACTER(loc);
+"INTEGER"     return yy::parser::make_INTEGER(loc);
+"CHARACTER"   return yy::parser::make_CHARACTER(loc);
+"LOGICAL"     return yy::parser::make_LOGICAL(loc);
+
+[\.]TRUE[\.]  return yy::parser::make_TRUE(loc);
+[\.]FALSE[\.] return yy::parser::make_FALSE(loc);
+[\.]EQV[\.]   return yy::parser::make_EQV(loc);
+[\.]AND[\.]   return yy::parser::make_AND(loc);
+[\.]OR[\.]    return yy::parser::make_OR(loc);
+[\.]NOT[\.]   return yy::parser::make_NOT(loc);
 
 "print"    return yy::parser::make_PRINT(loc);
 

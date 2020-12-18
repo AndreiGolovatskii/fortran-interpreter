@@ -51,8 +51,15 @@
     ASSIGN "="
     MINUS "-"
     PLUS "+"
-    STAR "*"
     SLASH "/"
+    STAR "*"
+    GT ">"
+    LT "<"
+    EQV
+    NOT
+    AND
+    OR
+
     LPAREN "("
     RPAREN ")"
     DOUBLE_COLON "::"
@@ -66,6 +73,10 @@
 
     INTEGER
     CHARACTER
+    LOGICAL
+
+    TRUE
+    FALSE
 
     PRINT
 ;
@@ -163,6 +174,14 @@ var_type:
     | CHARACTER paren_type_unnamed_parameters {
         $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TCharacterDescription>($2));
     }
+    | LOGICAL paren_type_unnamed_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TLogicalDescription>($2));
+    }
+    | LOGICAL paren_type_named_parameters {
+        $$ = std::shared_ptr<TTypeDescription>(std::make_unique<TLogicalDescription>($2));
+    }
+
+
 paren_type_named_parameters:
     %empty {
         $$ = std::vector<std::pair<std::string, std::string>>();
@@ -302,13 +321,20 @@ exp:
     "number" {$$ = std::make_unique<TValueExpression>(std::make_unique<TInteger>($1));}
     | "identifier" {$$ = std::make_unique<TIdentifierExpression>(std::move($1));}
     | exp "+" exp {$$ = std::make_unique<TSumExpression>(std::move($1), std::move($3)); }
-
     | exp "-" exp {$$ = std::make_unique<TSubExpression>(std::move($1), std::move($3)); }
     | exp "*" exp {$$ = std::make_unique<TMulExpression>(std::move($1), std::move($3)); }
     | exp "/" exp {$$ = std::make_unique<TDivExpression>(std::move($1), std::move($3)); }
+    | exp ">" exp {$$ = std::make_unique<TGtExpression>(std::move($1), std::move($3)); }
+    | exp "<" exp {$$ = std::make_unique<TLtExpression>(std::move($1), std::move($3)); }
+
     | "(" exp ")" {$$ = std::move($2); };
     | STRING {$$ = std::make_unique<TValueExpression>(std::make_unique<TCharacter>($1));}
-
+    | TRUE {$$ = std::make_unique<TValueExpression>(std::make_unique<TLogical>(true));}
+    | FALSE {$$ = std::make_unique<TValueExpression>(std::make_unique<TLogical>(false));}
+    | exp EQV exp {$$ = std::make_unique<TEqvExpression>(std::move($1), std::move($3)); }
+    | NOT exp {$$ = std::make_unique<TNotExpression>(std::move($2)); }
+    | exp AND exp {$$ = std::make_unique<TAndExpression>(std::move($1), std::move($3));}
+    | exp OR exp {$$ = std::make_unique<TOrExpression>(std::move($1), std::move($3));}
 %%
 
 void

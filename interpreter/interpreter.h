@@ -31,7 +31,7 @@ public:
 
     std::unique_ptr<TType> VisitDoublePositionExpression(
             TDoublePositionExpression* expression,
-            std::function<std::unique_ptr<TType>(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&)>
+            const std::function<std::unique_ptr<TType>(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&)>&
                     operation) {
         auto fist = expression->first->Accept(this);
         auto second = expression->second->Accept(this);
@@ -47,12 +47,36 @@ public:
         return VisitDoublePositionExpression(expression, TypeSub);
     }
 
-    virtual std::unique_ptr<TType> Visit(TMulExpression* expression) final {
+    std::unique_ptr<TType> Visit(TMulExpression* expression) final {
         return VisitDoublePositionExpression(expression, TypeMul);
     }
 
-    virtual std::unique_ptr<TType> Visit(TDivExpression* expression) final {
+    std::unique_ptr<TType> Visit(TDivExpression* expression) final {
         return VisitDoublePositionExpression(expression, TypeDiv);
+    }
+
+    std::unique_ptr<TType> Visit(TGtExpression* expression) final {
+        return Gt(expression->first->Accept(this), expression->second->Accept(this));
+    }
+
+    std::unique_ptr<TType> Visit(TLtExpression* expression) final {
+        return Lt(expression->first->Accept(this), expression->second->Accept(this));
+    }
+
+    std::unique_ptr<TType> Visit(TEqvExpression* expression) final {
+        return Eqv(expression->first->Accept(this), expression->second->Accept(this));
+    }
+
+    std::unique_ptr<TType> Visit(TNotExpression* expression) final {
+        return Not(expression->Expression->Accept(this));
+    }
+
+    std::unique_ptr<TType> Visit(TAndExpression* expression) final {
+        return And(expression->first->Accept(this), expression->second->Accept(this));
+    }
+
+    std::unique_ptr<TType> Visit(TOrExpression* expression) final {
+        return Or(expression->first->Accept(this), expression->second->Accept(this));
     }
 
     void Visit(TDeclaration* declaration) final {
@@ -94,7 +118,7 @@ public:
 
     void Visit(TIfStatement* ifStat) override {
         for (auto& simpleIf : ifStat->Components) {
-            if (simpleIf->Cond->Accept(this)) {
+            if (GetLogicalValue(simpleIf->Cond->Accept(this))) {
                 Visit(simpleIf->Statements);
                 return;
             }
@@ -109,14 +133,14 @@ public:
         auto stepValuePtr = doLoop->StepExpression->Accept(this);
 
         auto& iteratorValue = dynamic_cast<TInteger&>(*iteratorValuePtr);
-        auto& endValue = dynamic_cast<TInteger&>(*endValuePtr);
-        auto& stepValue = dynamic_cast<TInteger&>(*stepValuePtr);
-        if (stepValue.Value == 0) {
+        int endValue = dynamic_cast<TInteger&>(*endValuePtr).Value;
+        int stepValue = dynamic_cast<TInteger&>(*stepValuePtr).Value;
+        if (stepValue == 0) {
             throw std::logic_error("step must be non-zero");
         }
-        while (stepValue.Value > 0  && !iteratorValue.Great(endValue) || stepValue.Value < 0 && !iteratorValue.Less(endValue)) {
+        while (stepValue > 0 && iteratorValue.Value <= endValue || stepValue < 0 && iteratorValue.Value >= endValue) {
             Visit(doLoop->Statements);
-            iteratorValue.Add(stepValue);
+            iteratorValue.Value += stepValue;
         }
     }
 };

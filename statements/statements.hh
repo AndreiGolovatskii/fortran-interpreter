@@ -53,7 +53,7 @@ public:
     TIfStatement() {}
     void Accept(TVisitor* visitor) final { visitor->Visit(this); }
     void AddElse(std::vector<std::unique_ptr<TStatement>>&& ops) {
-        AddIf(std::make_unique<TValueExpression>(std::make_unique<TInteger>(1)), std::move(ops));
+        AddIf(std::make_unique<TValueExpression>(std::make_unique<TLogical>(true)), std::move(ops));
     }
     void AddIf(std::unique_ptr<TExpression>&& pred, std::vector<std::unique_ptr<TStatement>>&& ops) {
         Components.emplace_back(std::make_unique<TSimpleIfStatement>(std::move(pred), std::move(ops)));

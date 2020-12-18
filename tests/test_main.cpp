@@ -68,4 +68,4 @@ TEST_F(TInterpreterTest, SimplePrintStatements) { TestInterpreter("prints"); }
 TEST_F(TInterpreterTest, SimpleDoStatements) { TestInterpreter("do"); }
 
 
-//TEST_F(TInterpreterTest, DoStatements) { TestInterpreter("simple_statements/do_statements.f95"); }
+TEST_F(TInterpreterTest, SimpleIfStatements) { TestInterpreter("if"); }
