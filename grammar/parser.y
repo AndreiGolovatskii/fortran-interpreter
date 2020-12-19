@@ -14,8 +14,6 @@
     #include "types.hh"
 }
 
-// %param { TDriver &drv }
-
 %define parse.trace
 %define parse.error verbose
 
@@ -111,7 +109,6 @@
 
 %nterm <std::unique_ptr<TDoWhileLoopStatement>> do_while_loop
 
-//%printer { yyo << $$; } <*>;
 
 %%
 %start unit;

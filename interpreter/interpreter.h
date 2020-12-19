@@ -1,9 +1,9 @@
 #pragma once
 
 #include <driver.hh>
+#include <functional>
 #include <unordered_map>
 #include <vector>
-#include <functional>
 
 #include "driver.hh"
 #include "statements.hh"
@@ -145,7 +145,7 @@ public:
         int endValue        = dynamic_cast<TInteger&>(*endValuePtr).Value;
         int stepValue       = dynamic_cast<TInteger&>(*stepValuePtr).Value;
         if (stepValue == 0) {
-            throw std::logic_error("step must be non-zero");
+            throw std::runtime_error("step must be non-zero");
         }
         while (stepValue > 0 && iteratorValue.Value <= endValue || stepValue < 0 && iteratorValue.Value >= endValue) {
             Visit(doLoop->Statements);

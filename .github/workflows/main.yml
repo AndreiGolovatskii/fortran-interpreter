@@ -39,9 +39,3 @@ jobs:
           cp build/Tests tests
           cd tests
           ./Tests
-
-    #- name: UploadArtifacts
-    #  uses: actions/upload-artifact@v1.0.0
-    #  with:
-    #    name: Distributive
-    #    path: task4/exe
