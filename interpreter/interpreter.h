@@ -3,6 +3,7 @@
 #include <driver.hh>
 #include <unordered_map>
 #include <vector>
+#include <functional>
 
 #include "driver.hh"
 #include "statements.hh"
