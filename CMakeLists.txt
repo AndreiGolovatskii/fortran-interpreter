@@ -6,7 +6,7 @@ SET(CMAKE_CXX_FLAGS "-g -std=c++17")
 
 include_directories(statements types interpreter driver grammar ${FortranInterpreter_SOURCE_DIR})
 
-find_package(BISON 3.5 REQUIRED)
+find_package(BISON 3.0 REQUIRED)
 BISON_TARGET(
         MyParser
         grammar/parser.y
