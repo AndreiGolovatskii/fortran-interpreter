@@ -13,6 +13,8 @@ program MMMM
         PRINT *, "b = 3 < ", 0
     else if (b < 4) THEN
         PRINT *, "b = 3 < ", 4
+    else
+        print *, "b = 3 >= ", 4
     end if
 
     g = .TRUE.
