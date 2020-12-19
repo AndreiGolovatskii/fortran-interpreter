@@ -1,7 +1,21 @@
 #pragma once
 
-#include "statements_base.hh"
 #include "visitor.h"
+
+
+class TExpression {
+public:
+    virtual std::unique_ptr<TType> Accept(TVisitor* visitor) = 0;
+    virtual ~TExpression()                                   = default;
+};
+
+
+class TDoublePositionExpression : public TExpression {
+public:
+    TDoublePositionExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
+        : first(std::move(first)), second(std::move(second)) {}
+    std::unique_ptr<TExpression> first, second;
+};
 
 
 class TIdentifierExpression : public TExpression {
@@ -11,14 +25,6 @@ public:
     std::unique_ptr<TType> Accept(TVisitor* visitor) final {
         return visitor->Visit(this);
     }
-};
-
-
-class TDoublePositionExpression : public TExpression {
-public:
-    TDoublePositionExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
-        : first(std::move(first)), second(std::move(second)) {}
-    std::unique_ptr<TExpression> first, second;
 };
 
 

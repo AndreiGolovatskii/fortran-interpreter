@@ -15,19 +15,21 @@ class TDriver {
 public:
     explicit TDriver(std::istream& cin = std::cin, std::ostream& cout = std::cout, std::ostream& cerr = std::cerr)
         : scanner(*this), parser(scanner, *this), Cin_(cin), Cout_(cout), Cerr_(cerr) {}
+
     int parse(const std::string& f);
+
     std::string file;
     bool trace_parsing = false;
-
-    void scan_begin();
-    void scan_end();
-
     bool trace_scanning = false;
     yy::location location;
-
-    friend class Scanner;
     Scanner scanner;
     yy::parser parser;
+
+    void scan_begin();
+
+    void scan_end();
+
+    friend class Scanner;
 
     int Evaluate() {
         TInterpreter interpreter(Cin_, Cout_, Cerr_);
