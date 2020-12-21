@@ -85,3 +85,11 @@ TEST_F(TInterpreterTest, SimpleIfStatements) {
 TEST_F(TInterpreterTest, PriorityCheck) {
     TestInterpreter("operator_priority");
 }
+
+TEST_F(TInterpreterTest, Factorization) {
+    TestInterpreter("factorization");
+}
+
+TEST_F(TInterpreterTest, DeclarationIO) {
+    TestInterpreter("declaration_io");
+}

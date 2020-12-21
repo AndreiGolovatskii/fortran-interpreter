@@ -1,6 +1,6 @@
 program MMMM
-    INTEGER :: a
-    CHARACTER(4) :: c
+    INTEGER :: A
+    CHARACTER(4) :: C
 
     a = 1 + 3
     print *, a, 40 + 1 + 1

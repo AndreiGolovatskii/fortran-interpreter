@@ -88,6 +88,36 @@ public:
 };
 
 
+class TGeExpression : public TDoublePositionExpression {
+public:
+    TGeExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
+            : TDoublePositionExpression(std::move(first), std::move(second)) {}
+    std::unique_ptr<TType> Accept(TVisitor* visitor) final {
+        return visitor->Visit(this);
+    }
+};
+
+
+class TLeExpression : public TDoublePositionExpression {
+public:
+    TLeExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
+            : TDoublePositionExpression(std::move(first), std::move(second)) {}
+    std::unique_ptr<TType> Accept(TVisitor* visitor) final {
+        return visitor->Visit(this);
+    }
+};
+
+
+class TEqExpression : public TDoublePositionExpression {
+public:
+    TEqExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
+            : TDoublePositionExpression(std::move(first), std::move(second)) {}
+    std::unique_ptr<TType> Accept(TVisitor* visitor) final {
+        return visitor->Visit(this);
+    }
+};
+
+
 class TEqvExpression : public TDoublePositionExpression {
 public:
     TEqvExpression(std::unique_ptr<TExpression>&& first, std::unique_ptr<TExpression>&& second)
