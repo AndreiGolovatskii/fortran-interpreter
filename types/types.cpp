@@ -58,6 +58,48 @@ std::unique_ptr<TLogical> Lt(const std::unique_ptr<TType>& first, const std::uni
     throw std::bad_cast();
 }
 
+std::unique_ptr<TLogical> Ge(const std::unique_ptr<TType>& first, const std::unique_ptr<TType>& second) {
+    try {
+        return std::make_unique<TLogical>(dynamic_cast<TInteger&>(*first).Value >=
+                                          dynamic_cast<TInteger&>(*second).Value);
+    } catch (const std::bad_cast& _) {
+    }
+    try {
+        return std::make_unique<TLogical>(dynamic_cast<TCharacter&>(*first).Value >=
+                                          dynamic_cast<TCharacter&>(*second).Value);
+    } catch (const std::bad_cast& _) {
+    }
+    throw std::bad_cast();
+}
+
+std::unique_ptr<TLogical> Le(const std::unique_ptr<TType>& first, const std::unique_ptr<TType>& second) {
+    try {
+        return std::make_unique<TLogical>(dynamic_cast<TInteger&>(*first).Value <=
+                                          dynamic_cast<TInteger&>(*second).Value);
+    } catch (const std::bad_cast& _) {
+    }
+    try {
+        return std::make_unique<TLogical>(dynamic_cast<TCharacter&>(*first).Value <=
+                                          dynamic_cast<TCharacter&>(*second).Value);
+    } catch (const std::bad_cast& _) {
+    }
+    throw std::bad_cast();
+}
+
+std::unique_ptr<TLogical> Eq(const std::unique_ptr<TType>& first, const std::unique_ptr<TType>& second) {
+    try {
+        return std::make_unique<TLogical>(dynamic_cast<TInteger&>(*first).Value ==
+                                          dynamic_cast<TInteger&>(*second).Value);
+    } catch (const std::bad_cast& _) {
+    }
+    try {
+        return std::make_unique<TLogical>(dynamic_cast<TCharacter&>(*first).Value ==
+                                          dynamic_cast<TCharacter&>(*second).Value);
+    } catch (const std::bad_cast& _) {
+    }
+    throw std::bad_cast();
+}
+
 std::unique_ptr<TLogical> Eqv(const std::unique_ptr<TType>& first, const std::unique_ptr<TType>& second) {
     return std::make_unique<TLogical>(dynamic_cast<TLogical&>(*first).Value == dynamic_cast<TLogical&>(*second).Value);
 }

@@ -14,10 +14,16 @@ program MMMM
     END IF
 
     IF (101) THEN
+
+
         PRINT *, 1
     ELSE IF (2) THEN
+
+
         PRINT *, 2
     ELSE
+
+
         PRINT *, 3
     END IF
 

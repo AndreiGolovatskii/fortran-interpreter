@@ -53,6 +53,10 @@
     STAR "*"
     GT ">"
     LT "<"
+    GE "=>"
+    LE "<="
+    EQ "=="
+
     EQV
     NOT
     AND
@@ -78,6 +82,7 @@
     FALSE
 
     PRINT
+    READ
 ;
 
 %token <std::string> IDENTIFIER "identifier"
@@ -121,16 +126,15 @@ unit:
     }
     | "program" "identifier" "newline" operators "end" "program" mb_newlines {}
     | "program" "identifier" "newline" operators "end" mb_newlines {}
-    | operators "end" "program" mb_newlines {}
-    | operators "end" mb_newlines {}
+    | mb_newlines operators "end" "program" mb_newlines {}
+    | mb_newlines operators "end" mb_newlines {}
 
 mb_newlines:
     %empty {}
     | "newline" mb_newlines {}
 
 operators:
-    %empty {}
-    | declarations statements {
+    declarations statements {
         driver.SetDeclarations(std::move($1));
         driver.SetStatements(std::move($2));
     }
@@ -145,8 +149,7 @@ declarations:
     }
 
 declaration:
-    %empty {}
-    | var_type DOUBLE_COLON declaration_list {
+    var_type DOUBLE_COLON declaration_list {
         std::vector<std::unique_ptr<TStatement>> declarations;
         for (const std::string& varName : $3) {
             declarations.push_back(std::make_unique<TDeclaration>(varName, $1));
@@ -251,8 +254,7 @@ statements:
     }
 
 statement:
-    %empty {}
-    | "identifier" ASSIGN exp {
+    "identifier" ASSIGN exp {
         $$ = std::make_unique<TAssignStatement>($1, std::move($3));
     }
     | if_statement {
@@ -267,6 +269,10 @@ statement:
     | PRINT STAR exp_list {
         $$ = std::make_unique<TPrintStatement>(std::move($3));
     }
+    | READ STAR exp_list {
+        $$ = std::make_unique<TReadStatement>(std::move($3));
+    }
+
 
 do_while_loop:
     DO WHILE LPAREN exp RPAREN NEWLINE statements END DO {
@@ -274,9 +280,7 @@ do_while_loop:
     }
 
 exp_list:
-    %empty {
-        $$ = std::move(std::vector<std::unique_ptr<TExpression>>());
-    }
+    %empty {}
     | exp_list COMMA exp {
         $1.push_back(std::move($3));
         $$ = std::move($1);
@@ -326,19 +330,22 @@ do_loop_step:
 %right OR;
 %right AND;
 %right NOT;
-%left ">" "<" "==";
+%left ">" "<" "<=" ">=" "==";
 %left "+" "-";
 %left "*" "/";
 
 exp:
     "number" {$$ = std::make_unique<TValueExpression>(std::make_unique<TInteger>($1));}
     | "identifier" {$$ = std::make_unique<TIdentifierExpression>(std::move($1));}
-    | exp "+" exp {$$ = std::make_unique<TSumExpression>(std::move($1), std::move($3)); }
-    | exp "-" exp {$$ = std::make_unique<TSubExpression>(std::move($1), std::move($3)); }
-    | exp "*" exp {$$ = std::make_unique<TMulExpression>(std::move($1), std::move($3)); }
-    | exp "/" exp {$$ = std::make_unique<TDivExpression>(std::move($1), std::move($3)); }
-    | exp ">" exp {$$ = std::make_unique<TGtExpression>(std::move($1), std::move($3)); }
-    | exp "<" exp {$$ = std::make_unique<TLtExpression>(std::move($1), std::move($3)); }
+    | exp "+"  exp {$$ = std::make_unique<TSumExpression>(std::move($1), std::move($3)); }
+    | exp "-"  exp {$$ = std::make_unique<TSubExpression>(std::move($1), std::move($3)); }
+    | exp "*"  exp {$$ = std::make_unique<TMulExpression>(std::move($1), std::move($3)); }
+    | exp "/"  exp {$$ = std::make_unique<TDivExpression>(std::move($1), std::move($3)); }
+    | exp ">"  exp {$$ = std::make_unique<TGtExpression>(std::move($1), std::move($3)); }
+    | exp "<"  exp {$$ = std::make_unique<TLtExpression>(std::move($1), std::move($3)); }
+    | exp ">=" exp {$$ = std::make_unique<TGeExpression>(std::move($1), std::move($3)); }
+    | exp "<=" exp {$$ = std::make_unique<TLeExpression>(std::move($1), std::move($3)); }
+    | exp "==" exp {$$ = std::make_unique<TEqExpression>(std::move($1), std::move($3)); }
 
     | "(" exp ")" {$$ = std::move($2); };
     | STRING {$$ = std::make_unique<TValueExpression>(std::make_unique<TCharacter>($1));}
@@ -348,6 +355,7 @@ exp:
     | NOT exp {$$ = std::make_unique<TNotExpression>(std::move($2)); }
     | exp AND exp {$$ = std::make_unique<TAndExpression>(std::move($1), std::move($3));}
     | exp OR exp {$$ = std::make_unique<TOrExpression>(std::move($1), std::move($3));}
+
 %%
 
 void

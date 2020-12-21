@@ -61,6 +61,9 @@ blank [ \t\r]
 "\""       return yy::parser::make_QUOTE(loc);
 ">"        return yy::parser::make_GT(loc);
 "<"        return yy::parser::make_LT(loc);
+">="       return yy::parser::make_GE(loc);
+"<="       return yy::parser::make_LE(loc);
+"=="       return yy::parser::make_EQ(loc);
 
 "program"  return yy::parser::make_PROGRAM(loc);
 "end"      return yy::parser::make_END(loc);
@@ -83,6 +86,7 @@ blank [ \t\r]
 [\.]NOT[\.]   return yy::parser::make_NOT(loc);
 
 "print"    return yy::parser::make_PRINT(loc);
+"read"     return yy::parser::make_READ(loc);
 
 {int}      return make_NUMBER(yytext, loc);
 {id}       return yy::parser::make_IDENTIFIER(yytext, loc);

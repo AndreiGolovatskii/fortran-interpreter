@@ -1,7 +1,7 @@
 program MMMM
-    INTEGER :: a, b
-    LOGICAL :: g
-    CHARACTER(10) :: str1
+    INTEGER :: A, B
+    LOGICAL :: G
+    CHARACTER(10) :: STR1
 
     a = 2
     b = 3

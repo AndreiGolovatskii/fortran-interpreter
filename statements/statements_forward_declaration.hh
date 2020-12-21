@@ -2,6 +2,7 @@
 
 class TStatement;
 class TPrintStatement;
+class TReadStatement;
 class TAssignStatement;
 class TDeclaration;
 class TIfStatement;
@@ -17,6 +18,10 @@ class TMulExpression;
 class TDivExpression;
 class TGtExpression;
 class TLtExpression;
+class TGeExpression;
+class TLeExpression;
+class TEqExpression;
+
 class TEqvExpression;
 class TNotExpression;
 class TAndExpression;

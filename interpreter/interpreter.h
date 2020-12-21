@@ -66,6 +66,18 @@ public:
         return Lt(expression->first->Accept(this), expression->second->Accept(this));
     }
 
+    std::unique_ptr<TType> Visit(TGeExpression* expression) final {
+        return Ge(expression->first->Accept(this), expression->second->Accept(this));
+    }
+
+    std::unique_ptr<TType> Visit(TLeExpression* expression) final {
+        return Le(expression->first->Accept(this), expression->second->Accept(this));
+    }
+
+    std::unique_ptr<TType> Visit(TEqExpression* expression) final {
+        return Eq(expression->first->Accept(this), expression->second->Accept(this));
+    }
+
     std::unique_ptr<TType> Visit(TEqvExpression* expression) final {
         return Eqv(expression->first->Accept(this), expression->second->Accept(this));
     }
@@ -115,6 +127,13 @@ public:
             }
         }
         Cout_ << std::endl;
+    }
+
+    void Visit(TReadStatement* read) final {
+        for (auto& var : read->Vars) {
+            const auto& id = dynamic_cast<TIdentifierExpression&>(*var).Identifier;
+            Vars_.at(id)->Read(Cin_);
+        }
     }
 
     void Visit(std::vector<std::unique_ptr<TStatement>>& operatorList) {

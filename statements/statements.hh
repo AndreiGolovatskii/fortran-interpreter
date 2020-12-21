@@ -28,6 +28,18 @@ public:
 };
 
 
+class TReadStatement : public TStatement {
+public:
+    explicit TReadStatement(std::vector<std::unique_ptr<TExpression>>&& exprs) : Vars(std::move(exprs)) {}
+
+    void Accept(TVisitor* visitor) final {
+        visitor->Visit(this);
+    }
+
+    std::vector<std::unique_ptr<TExpression>> Vars;
+};
+
+
 class TAssignStatement : public TStatement {
 public:
     TAssignStatement(const std::string& varName, std::unique_ptr<TExpression>&& expr)

@@ -9,6 +9,7 @@
 class TType {
 public:
     virtual void Print(std::ostream& out) const = 0;
+    virtual void Read(std::istream& in)         = 0;
 
     virtual std::unique_ptr<TType> Clone() const = 0;
 
@@ -23,6 +24,10 @@ public:
 
     void Print(std::ostream& out) const override {
         out << Value;
+    }
+
+    void Read(std::istream& in) override {
+        in >> Value;
     }
 
     [[nodiscard]] std::unique_ptr<TType> Clone() const override {
@@ -47,17 +52,27 @@ public:
         out << Value;
     };
 
+    void Read(std::istream& in) override {
+        in >> Value;
+        Normalize_();
+    }
+
     [[nodiscard]] std::unique_ptr<TType> Clone() const override {
         return std::unique_ptr<TType>(std::make_unique<TCharacter>(*this));
     }
 
     void Assign(const std::unique_ptr<TType>& other) override {
         Value = dynamic_cast<TCharacter&>(*other).Value;
-        Value.resize(std::min(Len, Value.size()));
+        Normalize_();
     }
 
     std::string Value;
     size_t Len;
+
+private:
+    void Normalize_() {
+        Value.resize(std::min(Len, Value.size()));
+    }
 };
 
 
@@ -75,6 +90,10 @@ public:
 
     void Print(std::ostream& out) const override {
         out << (Value ? 'T' : 'F');
+    }
+
+    void Read(std::istream& in) override {
+        in >> Value;
     }
 
     bool Value;
@@ -199,6 +218,12 @@ std::unique_ptr<TType> TypeDiv(const std::unique_ptr<TType>&, const std::unique_
 std::unique_ptr<TLogical> Gt(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);
 
 std::unique_ptr<TLogical> Lt(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);
+
+std::unique_ptr<TLogical> Ge(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);
+
+std::unique_ptr<TLogical> Le(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);
+
+std::unique_ptr<TLogical> Eq(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);
 
 std::unique_ptr<TLogical> Eqv(const std::unique_ptr<TType>&, const std::unique_ptr<TType>&);
 
