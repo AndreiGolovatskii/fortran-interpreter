@@ -18,7 +18,7 @@ program DO_PARSE
 
     print *, "FACTORIAL OF 5"
     fac = 1
-    do i = 1, 5, 1
+    do i = 1, 5
         fac = fac * i
     end do
     print *, fac

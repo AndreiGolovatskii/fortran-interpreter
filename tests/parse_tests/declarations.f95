@@ -8,7 +8,4 @@ program MAIN
     InTegER :: i, j, k
 
     InTEGEr :: l, m, n
-
-
-
 end

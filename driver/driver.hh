@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "grammar/scanner.h"
+#include "scanner.h"
 #include "interpreter.h"
 #include "parser.hh"
 #include "types.hh"
