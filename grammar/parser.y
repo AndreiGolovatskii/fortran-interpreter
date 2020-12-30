@@ -329,7 +329,7 @@ do_loop_step:
 %right EQV;
 %right OR;
 %right AND;
-%right NOT;
+%precedence NOT;
 %left ">" "<" "<=" ">=" "==";
 %left "+" "-";
 %left "*" "/";
